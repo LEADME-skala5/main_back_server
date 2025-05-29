@@ -1,21 +1,19 @@
 package com.example.main_server.auth;
 
+import java.time.Duration;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
-import java.time.Duration;
-
 @Slf4j
 @Component
 public class GraphApiAccessTokenHandler {
 
-    private final TokenFetcher tokenFetcher;
-    private final StringRedisTemplate redisTemplate;
-
     private static final String GRAPH_API_ACCESS_TOKEN = "graph_api_access_token";
     private static final Duration TTL = Duration.ofMinutes(60);
+    private final TokenFetcher tokenFetcher;
+    private final StringRedisTemplate redisTemplate;
 
     public GraphApiAccessTokenHandler(
             @Qualifier("graph") TokenFetcher tokenFetcher,

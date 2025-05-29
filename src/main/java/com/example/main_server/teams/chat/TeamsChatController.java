@@ -20,9 +20,8 @@ public class TeamsChatController {
         List<String> chatRoomIds = teamsChatService.getChatRoomIds(userId);
         for (String id : chatRoomIds) {
             teamsChatService.getRoomChatData(id);
-            System.out.println(id);
         }
 
-        return ResponseEntity.ok("aaa");
+        return ResponseEntity.ok(userId + "의 채팅 내역 저장 성공");
     }
 }
