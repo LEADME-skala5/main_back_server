@@ -45,7 +45,7 @@ public class GraphApiTokenFetcher {
             return response.get(ACCESS_TOKEN_KEY).asText();
 
         } catch (HttpClientErrorException e) {
-            log.error("HTTP error while fetching token: {} - {}", e.getStatusCode(), e.getResponseBodyAsString());
+            log.error("HTTP error while fetching token: {}", e.getStatusCode());
             throw new RuntimeException("Failed to fetch access token: HTTP error", e);
         } catch (Exception e) {
             log.error("Unexpected error while fetching token", e);

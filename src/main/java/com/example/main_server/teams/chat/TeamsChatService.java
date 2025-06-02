@@ -16,9 +16,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TeamsChatService {
@@ -59,9 +61,10 @@ public class TeamsChatService {
                 continue;
             }
 
+            // TODO : DB 및 로직 변경 필요
             Optional<User> optionalUser = userRepo.findByTeamsUserId(teamsUserId);
             if (optionalUser.isEmpty()) {
-                System.out.println("User not found for teamsUserId: " + teamsUserId);
+                log.warn("User not found for teamsUserId: {}", teamsUserId);
                 continue;
             }
 

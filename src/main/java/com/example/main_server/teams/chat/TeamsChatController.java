@@ -16,7 +16,7 @@ public class TeamsChatController {
     private final TeamsChatService teamsChatService;
 
     @GetMapping("/{user-id}")
-    public ResponseEntity<String> getUserById(@PathVariable("user-id") String userId) {
+    public ResponseEntity<String> saveUserChatHistory(@PathVariable("user-id") String userId) {
         List<String> chatRoomIds = teamsChatService.getChatRoomIds(userId);
         for (String id : chatRoomIds) {
             teamsChatService.getRoomChatData(id);
