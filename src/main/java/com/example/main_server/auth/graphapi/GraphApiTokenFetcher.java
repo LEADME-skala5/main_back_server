@@ -1,20 +1,19 @@
-package com.example.main_server.auth.TokenFetcherImpl;
+package com.example.main_server.auth.graphapi;
 
-import com.example.main_server.auth.TokenFetcher;
 import com.fasterxml.jackson.databind.JsonNode;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClient;
 
 @Slf4j
 @Component
-@Qualifier("graph")
-public class GraphApiTokenFetcher implements TokenFetcher {
+@RequiredArgsConstructor
+public class GraphApiTokenFetcher {
     private static final String ACCESS_TOKEN_KEY = "access_token";
-    private final WebClient webClient;
+    private final RestClient tokenRestClient;
 
     @Value("${graph.api.tenant-id}")
     private String tenantId;
@@ -25,11 +24,6 @@ public class GraphApiTokenFetcher implements TokenFetcher {
     @Value("${graph.api.scope}")
     private String scope;
 
-    public GraphApiTokenFetcher(WebClient.Builder webClientBuilder) {
-        this.webClient = webClientBuilder.baseUrl("https://login.microsoftonline.com").build();
-    }
-
-    @Override
     public String fetch() {
         String body = "client_id=" + clientId +
                 "&client_secret=" + clientSecret +
@@ -37,13 +31,12 @@ public class GraphApiTokenFetcher implements TokenFetcher {
                 "&grant_type=client_credentials";
 
         try {
-            JsonNode response = webClient.post()
+            JsonNode response = tokenRestClient.post()
                     .uri("/{tenant_id}/oauth2/v2.0/token", tenantId)
-                    .bodyValue(body)
                     .header("Content-Type", "application/x-www-form-urlencoded")
+                    .body(body)
                     .retrieve()
-                    .bodyToMono(JsonNode.class)
-                    .block();
+                    .body(JsonNode.class);
 
             if (response == null || response.get(ACCESS_TOKEN_KEY) == null) {
                 throw new IllegalStateException("No access_token in response");
@@ -51,7 +44,7 @@ public class GraphApiTokenFetcher implements TokenFetcher {
 
             return response.get(ACCESS_TOKEN_KEY).asText();
 
-        } catch (WebClientResponseException e) {
+        } catch (HttpClientErrorException e) {
             log.error("HTTP error while fetching token: {} - {}", e.getStatusCode(), e.getResponseBodyAsString());
             throw new RuntimeException("Failed to fetch access token: HTTP error", e);
         } catch (Exception e) {

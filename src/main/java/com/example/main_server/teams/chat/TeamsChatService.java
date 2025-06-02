@@ -1,6 +1,6 @@
 package com.example.main_server.teams.chat;
 
-import com.example.main_server.auth.GraphApiAccessTokenHandler;
+import com.example.main_server.auth.graphapi.GraphApiAccessTokenHandler;
 import com.example.main_server.common.User;
 import com.example.main_server.common.UserRepository;
 import com.example.main_server.teams.chat.entity.TeamsAttachment;
@@ -15,44 +15,34 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.client.RestClient;
 
 @Service
+@RequiredArgsConstructor
 public class TeamsChatService {
-    private final WebClient webClient;
+    private final RestClient graphApiRestClient;
     private final GraphApiAccessTokenHandler accessTokenHandler;
     private final UserRepository userRepo;
     private final TeamsMessageRepository messageRepo;
 
-    public TeamsChatService(WebClient.Builder webClientBuilder,
-                            GraphApiAccessTokenHandler accessTokenHandler,
-                            UserRepository userRepo,
-                            TeamsMessageRepository messageRepo) {
-        this.webClient = webClientBuilder.baseUrl("https://graph.microsoft.com/v1.0").build();
-        this.accessTokenHandler = accessTokenHandler;
-        this.userRepo = userRepo;
-        this.messageRepo = messageRepo;
-    }
-
     public List<String> getChatRoomIds(String userId) {
-        JsonNode response = webClient.get()
+        JsonNode response = graphApiRestClient.get()
                 .uri("/users/{id}/chats", userId.trim())
                 .headers(headers -> headers.setBearerAuth(accessTokenHandler.getAccessToken()))
                 .retrieve()
-                .bodyToMono(JsonNode.class)
-                .block();
+                .body(JsonNode.class);
 
         return extractChatRoomIds(Objects.requireNonNull(response));
     }
 
     public void getRoomChatData(String chatRoomId) {
-        JsonNode response = webClient.get()
+        JsonNode response = graphApiRestClient.get()
                 .uri("/chats/{chatroom-id}/messages", chatRoomId)
                 .headers(headers -> headers.setBearerAuth(accessTokenHandler.getAccessToken()))
                 .retrieve()
-                .bodyToMono(JsonNode.class)
-                .block();
+                .body(JsonNode.class);
 
         if (response == null) {
             return;
@@ -69,12 +59,12 @@ public class TeamsChatService {
                 continue;
             }
 
-            // TODO: 상대방이 user 테이블에 저장되어있지 않으면 패스, 수정 필요
             Optional<User> optionalUser = userRepo.findByTeamsUserId(teamsUserId);
             if (optionalUser.isEmpty()) {
-                System.out.println("User not found for teamsUserId: "+teamsUserId);
+                System.out.println("User not found for teamsUserId: " + teamsUserId);
                 continue;
             }
+
             User user = optionalUser.get();
 
             TeamsMessage msg = new TeamsMessage();

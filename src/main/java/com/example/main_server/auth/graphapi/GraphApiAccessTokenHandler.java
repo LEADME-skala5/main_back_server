@@ -1,22 +1,20 @@
-package com.example.main_server.auth;
+package com.example.main_server.auth.graphapi;
 
 import java.time.Duration;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
 public class GraphApiAccessTokenHandler {
-
     private static final String GRAPH_API_ACCESS_TOKEN = "graph_api_access_token";
     private static final Duration TTL = Duration.ofMinutes(60);
-    private final TokenFetcher tokenFetcher;
+    private final GraphApiTokenFetcher tokenFetcher;
     private final StringRedisTemplate redisTemplate;
 
     public GraphApiAccessTokenHandler(
-            @Qualifier("graph") TokenFetcher tokenFetcher,
+            GraphApiTokenFetcher tokenFetcher,
             StringRedisTemplate redisTemplate
     ) {
         this.tokenFetcher = tokenFetcher;
