@@ -29,44 +29,26 @@ public class TeamsMessage {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "message_id")
+    @Column(name = "id")
     private Long id;
 
+    @Column(name = "chat_id", nullable = false)
+    private String chatId;
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
-
-    @Column(name = "teams_user_id", nullable = false)
-    private String teamsUserId;
-
-    @Column(name = "teams_message_id", nullable = false)
-    private String teamsMessageId;
-
-    @Column(name = "teams_display_name")
-    private String teamsDisplayName;
-
-    @Column(name = "message_type")
-    private String messageType;
-
-    @Column(name = "body_content_type")
-    private String bodyContentType;
+    @JoinColumn(name = "sender_user_id")
+    private User sender;
 
     @Lob
-    @Column(name = "body_content")
-    private String bodyContent;
+    @Column(name = "content")
+    private String content;
 
-    @Column(name = "created_datetime")
-    private Timestamp createdDatetime;
-
-    @Column(name = "log_date")
-    private LocalDate logDate;
-
-    @Column(name = "message_datetime")
-    private Timestamp messageDatetime;
+    @Column(name = "created_at")
+    private Instant createdAt;
 
     @Column(name = "collected_at")
-    private Timestamp collectedAt = Timestamp.from(Instant.now());
+    private Instant collectedAt;
 
-    @OneToMany(mappedBy = "message", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "teamsMessage", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TeamsAttachment> attachments = new ArrayList<>();
 }

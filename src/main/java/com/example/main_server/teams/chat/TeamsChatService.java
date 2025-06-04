@@ -7,18 +7,16 @@ import com.example.main_server.teams.chat.entity.TeamsAttachment;
 import com.example.main_server.teams.chat.entity.TeamsMessage;
 import com.example.main_server.teams.chat.repository.TeamsMessageRepository;
 import com.fasterxml.jackson.databind.JsonNode;
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
+
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -27,7 +25,7 @@ public class TeamsChatService {
     private final RestClient graphApiRestClient;
     private final GraphApiAccessTokenHandler accessTokenHandler;
     private final UserRepository userRepo;
-    private final TeamsMessageRepository messageRepo;
+    private final TeamsMessageRepository teamsMessageRepository;
 
     public List<String> getChatRoomIds(String userId) {
         JsonNode response = graphApiRestClient.get()
@@ -46,22 +44,15 @@ public class TeamsChatService {
                 .retrieve()
                 .body(JsonNode.class);
 
-        if (response == null) {
-            return;
-        }
+        if (response == null || !response.has("value")) return;
 
-        JsonNode root = response.get("value");
-        if (root == null || !root.isArray()) {
-            return;
-        }
+        for (JsonNode node : response.get("value")) {
+            if (!node.has("from") || !node.path("from").has("user")) continue;
+            JsonNode userNode = node.path("from").path("user");
 
-        for (JsonNode node : root) {
-            String teamsUserId = node.path("from").path("user").path("id").asText(null);
-            if (teamsUserId == null) {
-                continue;
-            }
+            String teamsUserId = userNode.path("id").asText(null);
+            if (teamsUserId == null) continue;
 
-            // TODO : DB 및 로직 변경 필요
             Optional<User> optionalUser = userRepo.findByTeamsUserId(teamsUserId);
             if (optionalUser.isEmpty()) {
                 log.warn("User not found for teamsUserId: {}", teamsUserId);
@@ -70,44 +61,31 @@ public class TeamsChatService {
 
             User user = optionalUser.get();
 
-            TeamsMessage msg = new TeamsMessage();
-            msg.setUser(user);
-            msg.setTeamsUserId(teamsUserId);
-            msg.setTeamsMessageId(node.path("id").asText());
-            msg.setTeamsDisplayName(node.path("from").path("user").path("displayName").asText(null));
-            msg.setMessageType(node.path("messageType").asText(null));
-            msg.setBodyContentType(node.path("body").path("contentType").asText(null));
-            msg.setBodyContent(node.path("body").path("content").asText(null));
-
-            Instant created = Instant.parse(node.path("createdDateTime").asText());
-            msg.setCreatedDatetime(Timestamp.from(created));
-            msg.setLogDate(LocalDateTime.ofInstant(created, ZoneOffset.UTC).toLocalDate());
-            msg.setMessageDatetime(Timestamp.from(created));
+            TeamsMessage teamsMessage = new TeamsMessage();
+            teamsMessage.setChatId(node.path("chatId").asText());
+            teamsMessage.setSender(user);
+            teamsMessage.setContent(node.path("body").path("content").asText());
+            teamsMessage.setCreatedAt(Instant.parse(node.path("createdDateTime").asText()));
 
             JsonNode attachments = node.path("attachments");
             if (attachments.isArray()) {
                 for (JsonNode att : attachments) {
-                    TeamsAttachment ta = new TeamsAttachment();
-                    ta.setMessage(msg);
-                    ta.setUser(user);
-                    ta.setTeamsUserId(teamsUserId);
-                    ta.setTeamsMessageId(msg.getTeamsMessageId());
-                    ta.setTeamsAttachmentsId(att.path("id").asText(null));
-                    ta.setAttachmentName(att.path("name").asText(null));
-                    ta.setContentUrl(att.path("contentUrl").asText(null));
-                    ta.setLogDate(msg.getLogDate());
-                    msg.getAttachments().add(ta);
+                    TeamsAttachment attachment = new TeamsAttachment();
+                    attachment.setTeamsMessage(teamsMessage);
+                    attachment.setAttachmentId(att.path("id").asText(null));
+                    attachment.setName(att.path("name").asText(null));
+                    attachment.setContentUrl(att.path("contentUrl").asText(null));
+                    teamsMessage.getAttachments().add(attachment);
                 }
             }
 
-            messageRepo.save(msg);
+            teamsMessageRepository.save(teamsMessage);
         }
     }
 
     private List<String> extractChatRoomIds(JsonNode jsonNode) {
         List<String> ids = new ArrayList<>();
         JsonNode valueArray = jsonNode.get("value");
-
         if (valueArray != null && valueArray.isArray()) {
             for (JsonNode node : valueArray) {
                 JsonNode idNode = node.get("id");
@@ -116,7 +94,6 @@ public class TeamsChatService {
                 }
             }
         }
-
         return ids;
     }
 }

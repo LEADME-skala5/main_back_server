@@ -28,3 +28,6 @@ graph:
     client-id: ${GRAPH_API_CLIENT_ID}
     client-secret: ${GRAPH_API_CLIENT_SECRET}
     scope: ${GRAPH_API_SCOPE}
+
+server:
+  port: ${PORT}

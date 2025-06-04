@@ -16,16 +16,16 @@ public class ExternalUser {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "teams_user_id")
-    private String teams_user_id;
+    @Column(name = "teams_user_id",unique = true)
+    private String teamsUserId;
 
     @Column(name = "display_name")
-    private String display_name;
+    private String displayName;
 
     @Column(name = "source")
     private String source;
 
     @Column(name = "created_at")
-    private Timestamp created_at;
+    private Timestamp createdAt;
 
 }

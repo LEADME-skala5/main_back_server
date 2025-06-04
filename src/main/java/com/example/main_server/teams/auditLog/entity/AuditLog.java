@@ -14,8 +14,9 @@ import java.time.LocalDateTime;
 @Setter
 public class AuditLog {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(length = 100)
-    private String id;
+    private Long id;
 
     @Column(name = "creation_time")
     private LocalDateTime creationTime;

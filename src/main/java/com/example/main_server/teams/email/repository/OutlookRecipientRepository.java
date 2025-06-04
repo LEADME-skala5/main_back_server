@@ -5,5 +5,4 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 public interface OutlookRecipientRepository extends JpaRepository<OutlookRecipient, Long> {
-    List<OutlookRecipient> findByEmailId(String emailId);
 }
