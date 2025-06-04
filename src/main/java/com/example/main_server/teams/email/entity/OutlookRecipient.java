@@ -1,0 +1,38 @@
+package com.example.main_server.teams.email.entity;
+
+import com.example.main_server.common.entity.User;
+import com.example.main_server.common.entity.ExternalUser;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
+@Entity
+@Table(name = "outlook_email_recipients")
+@Getter
+@Setter
+public class OutlookRecipient {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "email_id", nullable = false)
+    private OutlookEmail email;
+
+    @Column(name = "is_internal_user")
+    private boolean isInternalUser;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "fk_recipient_user"))
+    private User user;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "external_user_id", foreignKey = @ForeignKey(name = "fk_recipient_external_user"))
+    private ExternalUser externalUser;
+
+    @Column(name = "recipient_name", length = 255)
+    private String recipientName;
+
+    @Column(name = "recipient_address", length = 255)
+    private String recipientAddress;
+}
