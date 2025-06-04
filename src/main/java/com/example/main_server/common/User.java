@@ -11,47 +11,40 @@ import java.sql.Timestamp;
 @Entity
 @Table(name = "users")
 public class User {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_id")
-    private Long userId;
+    @Column(name = "id")
+    private Long id;
 
-    @Column(name = "emails_user_id", unique = true)
-    private String emailsUserId;
+    @Column(name = "slack_user_id")
+    private String slack_user_id;
 
-    @Column(name = "slack_user_id", unique = true)
-    private String slackUserId;
+    @Column(name = "teams_email")
+    private String teams_email;
 
-    @Column(name = "teams_user_id", unique = true)
-    private String teamsUserId;
+    @Column(name = "teams_user_id")
+    private String teams_user_id;
 
-    @Column(name = "onedrive_user_id", unique = true)
-    private String onedriveUserId;
-
-    @Column(name = "local_user_id", unique = true)
-    private String localUserId;
+    @Column(name = "onedrive_user_id")
+    private String onedrive_user_id;
 
     @Column(name = "name")
     private String name;
 
-    @Column(name = "employee_number", unique = true)
-    private String employeeNumber;
+    @Column(name = "employee_number")
+    private String employee_number;
 
     @Column(name = "password")
     private String password;
 
     @Column(name = "primary_email")
-    private String primaryEmail;
-
-    @Column(name = "teams_email")
-    private String teamsEmail;
+    private String primary_email;
 
     @Column(name = "slack_email")
-    private String slackEmail;
+    private String slack_email;
 
-    @Column(name = "local_path", columnDefinition = "TEXT")
-    private String localPath;
+    @Column(name = "local_path")
+    private String local_path;
 
     @Column(name = "department")
     private String department;
@@ -66,8 +59,6 @@ public class User {
     private String position;
 
     @Column(name = "career_level")
-    private String careerLevel;
+    private String career_level;
 
-    @Column(name = "created_at")
-    private Timestamp createdAt;
 }
