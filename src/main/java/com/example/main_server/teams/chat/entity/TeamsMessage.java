@@ -1,6 +1,6 @@
 package com.example.main_server.teams.chat.entity;
 
-import com.example.main_server.common.User;
+import com.example.main_server.common.entity.User;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

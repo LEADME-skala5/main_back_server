@@ -1,5 +1,6 @@
-package com.example.main_server.slack.team;
+package com.example.main_server.slack.team.repository;
 
+import com.example.main_server.slack.team.entity.SlackTeam;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface SlackTeamRepository extends JpaRepository<SlackTeam, Long> {

@@ -1,8 +1,8 @@
 package com.example.main_server.teams.chat;
 
 import com.example.main_server.auth.graphapi.GraphApiAccessTokenHandler;
-import com.example.main_server.common.User;
-import com.example.main_server.common.UserRepository;
+import com.example.main_server.common.entity.User;
+import com.example.main_server.common.repository.UserRepository;
 import com.example.main_server.teams.chat.entity.TeamsAttachment;
 import com.example.main_server.teams.chat.entity.TeamsMessage;
 import com.example.main_server.teams.chat.repository.TeamsMessageRepository;

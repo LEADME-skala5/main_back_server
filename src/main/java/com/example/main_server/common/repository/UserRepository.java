@@ -1,5 +1,6 @@
-package com.example.main_server.common;
+package com.example.main_server.common.repository;
 
+import com.example.main_server.common.entity.User;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 

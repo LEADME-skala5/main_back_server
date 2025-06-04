@@ -1,4 +1,4 @@
-package com.example.main_server.slack.chat;
+package com.example.main_server.slack.chat.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

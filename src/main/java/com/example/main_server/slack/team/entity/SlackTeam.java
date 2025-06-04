@@ -1,4 +1,4 @@
-package com.example.main_server.slack.team;
+package com.example.main_server.slack.team.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
