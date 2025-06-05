@@ -1,10 +1,10 @@
 package com.example.main_server.evaluation;
 
 import com.example.main_server.evaluation.dto.EvaluationCriteriaRequestDTO;
-import com.example.main_server.evaluation.dto.EvaluationKeywordsDTO;
+import com.example.main_server.evaluation.dto.EvaluationKeywordsRequestDTO;
+import com.example.main_server.evaluation.dto.EvaluationKeywordsResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,19 +17,19 @@ public class EvaluationController {
 
     private final EvaluationService evaluationService;
 
-    @PostMapping
-    public ResponseEntity<EvaluationKeywordsDTO> setEvaluationCriteria(@RequestBody EvaluationCriteriaRequestDTO body) {
-        EvaluationKeywordsDTO response = evaluationService.generateKeywords(body);
+    @PostMapping("/generate")
+    public ResponseEntity<EvaluationKeywordsResponseDTO> setEvaluationCriteria(
+            @RequestBody EvaluationCriteriaRequestDTO body) {
+        EvaluationKeywordsResponseDTO response = evaluationService.generateKeywords(body);
 
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/{teamId}")
+    @PostMapping("")
     public ResponseEntity<String> setEvaluationCriteria(
-            @PathVariable("teamId") Long teamId,
-            @RequestBody EvaluationKeywordsDTO body) {
-        evaluationService.saveKeywords(teamId, body.keywords());
+            @RequestBody EvaluationKeywordsRequestDTO body) {
+        evaluationService.saveKeywords(body.organizationId(), body.keywords());
 
-        return ResponseEntity.ok("Team ID: " + teamId + ", Content: ");
+        return ResponseEntity.ok("저장했음!");
     }
 }
