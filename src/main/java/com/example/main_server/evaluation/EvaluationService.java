@@ -9,10 +9,13 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class EvaluationService {
@@ -42,13 +45,21 @@ public class EvaluationService {
         // TODO: AI Agent에 요청로직 구현해야함
 
         try {
-            return restClient.post()
+            List<String> keywords = restClient.post()
                     .uri("/aaa")
                     .body(body)
                     .retrieve()
-                    .body(EvaluationKeywordsResponseDTO.class);
+                    .body(new ParameterizedTypeReference<>() {
+                    });
+
+            return new EvaluationKeywordsResponseDTO(true, keywords);
         } catch (RestClientException e) {
-            throw new RuntimeException("LLM API 요청 실패: " + e.getMessage(), e);
+            log.error("LLM API 요청 실패: {}", e.getMessage(), e);
+
+            return new EvaluationKeywordsResponseDTO(
+                    false,
+                    List.of("키워드 생성 실패")
+            );
         }
     }
 }

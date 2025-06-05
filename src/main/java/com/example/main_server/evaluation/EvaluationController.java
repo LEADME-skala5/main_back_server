@@ -18,7 +18,7 @@ public class EvaluationController {
     private final EvaluationService evaluationService;
 
     @PostMapping("/generate")
-    public ResponseEntity<EvaluationKeywordsResponseDTO> setEvaluationCriteria(
+    public ResponseEntity<EvaluationKeywordsResponseDTO> generateEvaluationCriteria(
             @RequestBody EvaluationCriteriaRequestDTO body) {
         EvaluationKeywordsResponseDTO response = evaluationService.generateKeywords(body);
 
@@ -26,7 +26,7 @@ public class EvaluationController {
     }
 
     @PostMapping("")
-    public ResponseEntity<String> setEvaluationCriteria(
+    public ResponseEntity<String> saveEvaluationCriteria(
             @RequestBody EvaluationKeywordsRequestDTO body) {
         evaluationService.saveKeywords(body.organizationId(), body.keywords());
 
