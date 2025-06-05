@@ -1,82 +1,71 @@
 package com.example.main_server.common.entity;
 
-import com.example.main_server.slack.chat.entity.SlackFile;
-import com.example.main_server.slack.chat.entity.SlackMessage;
-import com.example.main_server.slack.team.entity.SlackMember;
-import com.example.main_server.teams.chat.entity.TeamsMessage;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.ForeignKey;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import java.util.List;
+import lombok.Data;
 
+@Data
 @Entity
 @Table(name = "users")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
     private Long id;
 
-    @Column(name = "slack_user_id")
+    @Column(name = "slack_user_id", unique = true, length = 255)
     private String slackUserId;
 
-    @Column(name = "teams_email")
+    @Column(name = "teams_email", unique = true, length = 255)
     private String teamsEmail;
 
-    @Column(name = "teams_user_id")
+    @Column(name = "teams_user_id", unique = true, length = 255)
     private String teamsUserId;
 
-    @Column(name = "onedrive_user_id")
+    @Column(name = "onedrive_user_id", unique = true, length = 255)
     private String onedriveUserId;
 
-    @Column(name = "name")
+    @Column(name = "name", nullable = false, length = 100)
     private String name;
 
-    @Column(name = "employee_number")
+    @Column(name = "employee_number", unique = true, length = 50)
     private String employeeNumber;
 
-    @Column(name = "password")
+    @Column(name = "password", length = 255)
     private String password;
 
-    @Column(name = "primary_email")
+    @Column(name = "primary_email", length = 255)
     private String primaryEmail;
 
-    @Column(name = "slack_email")
+    @Column(name = "slack_email", length = 255)
     private String slackEmail;
 
-    @Column(name = "local_path")
+    @Column(name = "local_path", columnDefinition = "TEXT")
     private String localPath;
 
-    @Column(name = "department")
-    private String department;
+    @Column(name = "is_manager", nullable = false, columnDefinition = "TINYINT(1)")
+    private Boolean isManager = false;
 
-    @Column(name = "division")
-    private String division;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "department_id", foreignKey = @ForeignKey(name = "fk_user_department"))
+    private Department department;
 
-    @Column(name = "organization")
-    private String organization;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "division_id", foreignKey = @ForeignKey(name = "fk_user_division"))
+    private Division division;
 
-    @Column(name = "position")
-    private String position;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "organization_id", foreignKey = @ForeignKey(name = "fk_user_organization"))
+    private Organization organization;
 
-    @Column(name = "career_level")
+    @Column(name = "career_level", nullable = false, length = 50)
     private String careerLevel;
-
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-    private List<SlackMessage> slackMessages;
-
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-    private List<SlackFile> slackFiles;
-
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-    private List<SlackMember> slackMembers;
-
-    @OneToMany(mappedBy = "sender", fetch = FetchType.LAZY)
-    private List<TeamsMessage> teamsMessages;
 
 }

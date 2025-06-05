@@ -7,16 +7,15 @@ import com.example.main_server.teams.chat.entity.TeamsAttachment;
 import com.example.main_server.teams.chat.entity.TeamsMessage;
 import com.example.main_server.teams.chat.repository.TeamsMessageRepository;
 import com.fasterxml.jackson.databind.JsonNode;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClient;
-
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClient;
 
 @Slf4j
 @Service
@@ -44,14 +43,20 @@ public class TeamsChatService {
                 .retrieve()
                 .body(JsonNode.class);
 
-        if (response == null || !response.has("value")) return;
+        if (response == null || !response.has("value")) {
+            return;
+        }
 
         for (JsonNode node : response.get("value")) {
-            if (!node.has("from") || !node.path("from").has("user")) continue;
+            if (!node.has("from") || !node.path("from").has("user")) {
+                continue;
+            }
             JsonNode userNode = node.path("from").path("user");
 
             String teamsUserId = userNode.path("id").asText(null);
-            if (teamsUserId == null) continue;
+            if (teamsUserId == null) {
+                continue;
+            }
 
             Optional<User> optionalUser = userRepo.findByTeamsUserId(teamsUserId);
             if (optionalUser.isEmpty()) {
