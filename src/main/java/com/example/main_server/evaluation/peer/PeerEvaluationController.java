@@ -6,8 +6,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -23,21 +21,21 @@ public class PeerEvaluationController {
         return ResponseEntity.ok(peers);
     }
 
-    @GetMapping("/keywords")
-    public ResponseEntity<List<String>> getPeerKeywords() {
-        peerEvaluationService.getKeywords();
-        return ResponseEntity.ok(keywords);
-    }
+//    @GetMapping("/keywords")
+//    public ResponseEntity<List<String>> getPeerKeywords() {
+//        peerEvaluationService.getKeywords();
+//        return ResponseEntity.ok(keywords);
+//    }
 
-    @PostMapping("/evaluation")
-    public ResponseEntity<Void> savePeerKeywords(@RequestBody PeerKeywordRequest request) {
-        peerEvaluationService.savePeerKeywords(request);
-        return ResponseEntity.ok().build();
-    }
+//    @PostMapping("/evaluation")
+//    public ResponseEntity<Void> savePeerKeywords(@RequestBody PeerKeywordRequest request) {
+//        peerEvaluationService.savePeerKeywords(request);
+//        return ResponseEntity.ok().build();
+//    }
 
-    @PostMapping("/contribution")
-    public ResponseEntity<Void> saveContributionScore(@RequestBody ContributionRequest request) {
-        peerEvaluationService.saveContributionScore(request);
-        return ResponseEntity.ok().build();
-    }
+//    @PostMapping("/contribution")
+//    public ResponseEntity<Void> saveContributionScore(@RequestBody ContributionRequest request) {
+//        peerEvaluationService.saveContributionScore(request);
+//        return ResponseEntity.ok().build();
+//    }
 }
