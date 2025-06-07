@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/evaluation-criteria")
+@RequestMapping("/api/v1/qualitative-evaluation")
 @RequiredArgsConstructor
 public class QualitativeEvaluationController {
 

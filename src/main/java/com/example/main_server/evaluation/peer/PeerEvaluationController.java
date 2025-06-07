@@ -1,5 +1,7 @@
 package com.example.main_server.evaluation.peer;
 
+import com.example.main_server.evaluation.peer.dto.PeerInfoResponse;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,14 +12,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/peer")
+@RequestMapping("/api/v1/peer-evaluation")
 @RequiredArgsConstructor
 public class PeerEvaluationController {
     private final PeerEvaluationService peerEvaluationService;
 
     @GetMapping("/{userId}")
-    public ResponseEntity<List<PeerResponseDTO>> getPeers(@PathVariable Long userId) {
-        List<PeerResponseDTO> peers = peerEvaluationService.getPeers(userId);
+    public ResponseEntity<List<PeerInfoResponse>> getPeers(@PathVariable Long userId) {
+        List<PeerInfoResponse> peers = peerEvaluationService.getPeers(userId);
         return ResponseEntity.ok(peers);
     }
 
@@ -28,13 +30,13 @@ public class PeerEvaluationController {
     }
 
     @PostMapping("/evaluation")
-    public ResponseEntity<Void> savePeerKeywords(@RequestBody PeerKeywordRequestDTO request) {
+    public ResponseEntity<Void> savePeerKeywords(@RequestBody PeerKeywordRequest request) {
         peerEvaluationService.savePeerKeywords(request);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/contribution")
-    public ResponseEntity<Void> saveContributionScore(@RequestBody ContributionRequestDTO request) {
+    public ResponseEntity<Void> saveContributionScore(@RequestBody ContributionRequest request) {
         peerEvaluationService.saveContributionScore(request);
         return ResponseEntity.ok().build();
     }
