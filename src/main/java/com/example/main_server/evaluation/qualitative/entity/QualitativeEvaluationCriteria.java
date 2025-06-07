@@ -1,4 +1,4 @@
-package com.example.main_server.evaluation.entity;
+package com.example.main_server.evaluation.qualitative.entity;
 
 import com.example.main_server.common.entity.Organization;
 import jakarta.persistence.Column;

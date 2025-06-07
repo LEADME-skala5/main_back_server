@@ -1,10 +1,10 @@
-package com.example.main_server.evaluation;
+package com.example.main_server.evaluation.qualitative;
 
 import com.example.main_server.common.entity.Organization;
 import com.example.main_server.common.repository.OrganizationRepository;
-import com.example.main_server.evaluation.dto.EvaluationCriteriaRequestDTO;
-import com.example.main_server.evaluation.dto.EvaluationKeywordsResponseDTO;
-import com.example.main_server.evaluation.entity.QualitativeEvaluationCriteria;
+import com.example.main_server.evaluation.qualitative.dto.QualitativeEvaluationCriteriaRequest;
+import com.example.main_server.evaluation.qualitative.dto.QualitativeEvaluationKeywordsResponse;
+import com.example.main_server.evaluation.qualitative.entity.QualitativeEvaluationCriteria;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import java.util.List;
@@ -18,9 +18,9 @@ import org.springframework.web.client.RestClientException;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class EvaluationService {
+public class QualitativeEvaluationService {
     private static final String MODEL_SERVER_URL = "https://llm-api.example.com";
-    private final EvaluationRepository evaluationRepository;
+    private final QualitativeEvaluationRepository qualitativeEvaluationRepository;
     private final OrganizationRepository organizationRepository;
     private final RestClient restClient = RestClient.builder()
             .baseUrl(MODEL_SERVER_URL)
@@ -38,10 +38,10 @@ public class EvaluationService {
                         .build())
                 .toList();
 
-        evaluationRepository.saveAll(entities);
+        qualitativeEvaluationRepository.saveAll(entities);
     }
 
-    public EvaluationKeywordsResponseDTO generateKeywords(EvaluationCriteriaRequestDTO body) {
+    public QualitativeEvaluationKeywordsResponse generateKeywords(QualitativeEvaluationCriteriaRequest body) {
         // TODO: AI Agent에 요청로직 구현해야함
 
         try {
@@ -52,11 +52,11 @@ public class EvaluationService {
                     .body(new ParameterizedTypeReference<>() {
                     });
 
-            return new EvaluationKeywordsResponseDTO(true, keywords);
+            return new QualitativeEvaluationKeywordsResponse(true, keywords);
         } catch (RestClientException e) {
             log.error("LLM API 요청 실패: {}", e.getMessage(), e);
 
-            return new EvaluationKeywordsResponseDTO(
+            return new QualitativeEvaluationKeywordsResponse(
                     false,
                     List.of("키워드 생성 실패")
             );
