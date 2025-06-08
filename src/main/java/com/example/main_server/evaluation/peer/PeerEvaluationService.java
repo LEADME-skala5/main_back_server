@@ -3,6 +3,7 @@ package com.example.main_server.evaluation.peer;
 import com.example.main_server.evaluation.common.entity.TaskParticipation;
 import com.example.main_server.evaluation.common.repository.TaskParticipationRepository;
 import com.example.main_server.evaluation.peer.dto.PeerInfoResponse;
+import com.example.main_server.evaluation.peer.entity.EvaluationKeyword;
 import com.example.main_server.evaluation.peer.repository.EvaluationKeywordRepository;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -43,10 +44,9 @@ public class PeerEvaluationService {
         return new ArrayList<>(peers);
     }
 
-//    public void getKeywords() {
-//        // TODO: 모든 키워드 가져와서 반환하기
-//        evaluationKeywordRepository.findAll();
-//    }
+    public List<EvaluationKeyword> getKeywords() {
+        return evaluationKeywordRepository.findAll();
+    }
 
 //    public void savePeerKeywords(PeerKeywordRequest request) {
 //    }

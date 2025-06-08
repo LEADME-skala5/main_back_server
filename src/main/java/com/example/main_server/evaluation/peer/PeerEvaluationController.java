@@ -1,6 +1,8 @@
 package com.example.main_server.evaluation.peer;
 
+import com.example.main_server.evaluation.peer.dto.EvaluationKeywordResponse;
 import com.example.main_server.evaluation.peer.dto.PeerInfoResponse;
+import com.example.main_server.evaluation.peer.entity.EvaluationKeyword;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -21,11 +23,13 @@ public class PeerEvaluationController {
         return ResponseEntity.ok(peers);
     }
 
-//    @GetMapping("/keywords")
-//    public ResponseEntity<List<String>> getPeerKeywords() {
-//        peerEvaluationService.getKeywords();
-//        return ResponseEntity.ok(keywords);
-//    }
+    @GetMapping("/keywords")
+    public List<EvaluationKeywordResponse> getPeerKeywords() {
+        List<EvaluationKeyword> keywords = peerEvaluationService.getKeywords();
+        return keywords.stream()
+                .map(k -> new EvaluationKeywordResponse(k.getId(), k.getKeyword(), k.getIsPositive()))
+                .toList();
+    }
 
 //    @PostMapping("/evaluation")
 //    public ResponseEntity<Void> savePeerKeywords(@RequestBody PeerKeywordRequest request) {
