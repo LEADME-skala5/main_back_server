@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @Slf4j
-@RestControllerAdvice
+@RestControllerAdvice("com.example.main_server.evaluation.peer")
 public class PeerEvaluationExceptionHandler {
 
     @ExceptionHandler(KeywordNotFoundException.class)
