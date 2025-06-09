@@ -2,17 +2,22 @@ package com.example.main_server.evaluation.peer;
 
 import com.example.main_server.common.entity.User;
 import com.example.main_server.common.repository.UserRepository;
+import com.example.main_server.evaluation.common.entity.Task;
 import com.example.main_server.evaluation.common.entity.TaskParticipation;
 import com.example.main_server.evaluation.common.repository.TaskParticipationRepository;
+import com.example.main_server.evaluation.common.repository.TaskRepository;
 import com.example.main_server.evaluation.peer.dto.PeerInfoResponse;
 import com.example.main_server.evaluation.peer.dto.PeerKeywordEvaluationRequest;
 import com.example.main_server.evaluation.peer.dto.PeerKeywordEvaluationResponse;
+import com.example.main_server.evaluation.peer.dto.PeerTaskContributionEvaluationRequest;
 import com.example.main_server.evaluation.peer.entity.EvaluationKeyword;
 import com.example.main_server.evaluation.peer.entity.PeerKeywordEvaluation;
+import com.example.main_server.evaluation.peer.entity.PeerTaskContributionEvaluation;
 import com.example.main_server.evaluation.peer.exception.InvalidEvaluationRequestException;
 import com.example.main_server.evaluation.peer.exception.KeywordNotFoundException;
 import com.example.main_server.evaluation.peer.repository.EvaluationKeywordRepository;
 import com.example.main_server.evaluation.peer.repository.PeerKeywordEvaluationRepository;
+import com.example.main_server.evaluation.peer.repository.PeerTaskContributionEvaluationRepository;
 import com.example.main_server.util.exception.UserNotFoundException;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
@@ -25,10 +30,14 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class PeerEvaluationService {
+    private static final int MAX_CONTRIBUTION_SCORE = 100;
+    private static final int MIN_CONTRIBUTION_SCORE = 1;
     private final EvaluationKeywordRepository evaluationKeywordRepository;
     private final TaskParticipationRepository taskParticipationRepository;
     private final PeerKeywordEvaluationRepository peerKeywordEvaluationRepository;
     private final UserRepository userRepository;
+    private final PeerTaskContributionEvaluationRepository peerTaskContributionEvaluationRepository;
+    private final TaskRepository taskRepository;
 
     public List<PeerInfoResponse> getPeers(Long userId) {
         // 1. userId로 해당 사용자가 참여한 모든 TaskParticipation 조회
@@ -107,6 +116,55 @@ public class PeerEvaluationService {
         }
     }
 
-//    public void saveContributionScore(ContributionRequest request) {
-//    }
+    @Transactional
+    public void saveContributionScore(PeerTaskContributionEvaluationRequest request) {
+        // 입력 값 검증
+        validateContributionRequest(request);
+
+        // 엔티티 조회
+        Task task = taskRepository.findById(request.taskId())
+                .orElseThrow(() -> new RuntimeException("태스크를 찾을 수 없습니다. ID: " + request.taskId()));
+
+        User evaluator = userRepository.findById(request.evaluatorUserId())
+                .orElseThrow(() -> new UserNotFoundException("평가자를 찾을 수 없습니다. ID: " + request.evaluatorUserId()));
+
+        User target = userRepository.findById(request.targetUserId())
+                .orElseThrow(() -> new UserNotFoundException("피평가자를 찾을 수 없습니다. ID: " + request.targetUserId()));
+
+        // 기여도 평가 엔티티 생성
+        PeerTaskContributionEvaluation evaluation = new PeerTaskContributionEvaluation();
+        evaluation.setTask(task);
+        evaluation.setEvaluator(evaluator);
+        evaluation.setTarget(target);
+        evaluation.setScore(request.score());
+
+        // 저장
+        peerTaskContributionEvaluationRepository.save(evaluation);
+    }
+
+    private void validateContributionRequest(PeerTaskContributionEvaluationRequest request) {
+        if (request.taskId() == null) {
+            throw new InvalidEvaluationRequestException("태스크 ID는 필수입니다.");
+        }
+
+        if (request.evaluatorUserId() == null) {
+            throw new InvalidEvaluationRequestException("평가자 ID는 필수입니다.");
+        }
+
+        if (request.targetUserId() == null) {
+            throw new InvalidEvaluationRequestException("피평가자 ID는 필수입니다.");
+        }
+
+        if (request.score() == null) {
+            throw new InvalidEvaluationRequestException("점수는 필수입니다.");
+        }
+
+        if (request.evaluatorUserId().equals(request.targetUserId())) {
+            throw new InvalidEvaluationRequestException("자기 자신을 평가할 수 없습니다.");
+        }
+
+        if (request.score() < MIN_CONTRIBUTION_SCORE || request.score() > MAX_CONTRIBUTION_SCORE) {
+            throw new InvalidEvaluationRequestException("유효하지 않은 기여도입니다.");
+        }
+    }
 }

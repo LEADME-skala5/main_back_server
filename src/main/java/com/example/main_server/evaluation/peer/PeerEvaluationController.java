@@ -4,6 +4,7 @@ import com.example.main_server.evaluation.peer.dto.EvaluationKeywordResponse;
 import com.example.main_server.evaluation.peer.dto.PeerInfoResponse;
 import com.example.main_server.evaluation.peer.dto.PeerKeywordEvaluationRequest;
 import com.example.main_server.evaluation.peer.dto.PeerKeywordEvaluationResponse;
+import com.example.main_server.evaluation.peer.dto.PeerTaskContributionEvaluationRequest;
 import com.example.main_server.evaluation.peer.entity.EvaluationKeyword;
 import java.net.URI;
 import java.util.List;
@@ -44,9 +45,10 @@ public class PeerEvaluationController {
         return ResponseEntity.created(location).body(response);
     }
 
-//    @PostMapping("/contribution-evaluation")
-//    public ResponseEntity<Void> saveContributionScore(@RequestBody ContributionRequest request) {
-//        peerEvaluationService.saveContributionScore(request);
-//        return ResponseEntity.ok().build();
-//    }
+    @PostMapping("/contribution-evaluation")
+    public ResponseEntity<Void> saveContributionScore(@RequestBody PeerTaskContributionEvaluationRequest request) {
+        peerEvaluationService.saveContributionScore(request);
+        URI location = URI.create("/contribution-evaluation");
+        return ResponseEntity.created(location).build();
+    }
 }
