@@ -1,10 +1,20 @@
 package com.example.main_server.evaluation.peer;
 
+import com.example.main_server.common.entity.User;
+import com.example.main_server.common.repository.UserRepository;
 import com.example.main_server.evaluation.common.entity.TaskParticipation;
 import com.example.main_server.evaluation.common.repository.TaskParticipationRepository;
 import com.example.main_server.evaluation.peer.dto.PeerInfoResponse;
+import com.example.main_server.evaluation.peer.dto.PeerKeywordEvaluationRequest;
+import com.example.main_server.evaluation.peer.dto.PeerKeywordEvaluationResponse;
 import com.example.main_server.evaluation.peer.entity.EvaluationKeyword;
+import com.example.main_server.evaluation.peer.entity.PeerKeywordEvaluation;
+import com.example.main_server.evaluation.peer.exception.InvalidEvaluationRequestException;
+import com.example.main_server.evaluation.peer.exception.KeywordNotFoundException;
 import com.example.main_server.evaluation.peer.repository.EvaluationKeywordRepository;
+import com.example.main_server.evaluation.peer.repository.PeerKeywordEvaluationRepository;
+import com.example.main_server.util.exception.UserNotFoundException;
+import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -17,6 +27,8 @@ import org.springframework.stereotype.Service;
 public class PeerEvaluationService {
     private final EvaluationKeywordRepository evaluationKeywordRepository;
     private final TaskParticipationRepository taskParticipationRepository;
+    private final PeerKeywordEvaluationRepository peerKeywordEvaluationRepository;
+    private final UserRepository userRepository;
 
     public List<PeerInfoResponse> getPeers(Long userId) {
         // 1. userId로 해당 사용자가 참여한 모든 TaskParticipation 조회
@@ -48,8 +60,52 @@ public class PeerEvaluationService {
         return evaluationKeywordRepository.findAll();
     }
 
-//    public void savePeerKeywords(PeerKeywordRequest request) {
-//    }
+    @Transactional
+    public PeerKeywordEvaluationResponse savePeerKeywords(PeerKeywordEvaluationRequest request) {
+        // 입력 값 검증
+        validateRequest(request);
+
+        // 사용자 조회
+        User evaluator = userRepository.findById(request.evaluatorUserId())
+                .orElseThrow(() -> new UserNotFoundException("평가자를 찾을 수 없습니다. ID: " + request.evaluatorUserId()));
+
+        User evaluatee = userRepository.findById(request.evaluateeUserId())
+                .orElseThrow(() -> new UserNotFoundException("피평가자를 찾을 수 없습니다. ID: " + request.evaluateeUserId()));
+
+        List<PeerKeywordEvaluation> evaluations = new ArrayList<>();
+
+        // 각 키워드별로 평가 엔티티 생성
+        for (Long keywordId : request.keywordIds()) {
+            EvaluationKeyword keyword = evaluationKeywordRepository.findById(keywordId)
+                    .orElseThrow(() -> new KeywordNotFoundException("키워드를 찾을 수 없습니다. ID: " + keywordId));
+
+            PeerKeywordEvaluation evaluation = new PeerKeywordEvaluation();
+            evaluation.setEvaluator(evaluator);
+            evaluation.setEvaluatee(evaluatee);
+            evaluation.setKeyword(keyword);
+
+            evaluations.add(evaluation);
+        }
+
+        // 일괄 저장
+        List<PeerKeywordEvaluation> savedEvaluations = peerKeywordEvaluationRepository.saveAll(evaluations);
+
+        return new PeerKeywordEvaluationResponse("동료 평가가 성공적으로 저장되었습니다.", evaluations.size());
+    }
+
+    private void validateRequest(PeerKeywordEvaluationRequest request) {
+        if (request.keywordIds() == null || request.keywordIds().isEmpty()) {
+            throw new InvalidEvaluationRequestException("키워드 ID 목록이 비어있습니다.");
+        }
+
+        if (request.evaluatorUserId().equals(request.evaluateeUserId())) {
+            throw new InvalidEvaluationRequestException("자기 자신을 평가할 수 없습니다.");
+        }
+
+        if (request.evaluateeUserId() == null) {
+            throw new InvalidEvaluationRequestException("평가자와 피평가자 ID는 필수입니다.");
+        }
+    }
 
 //    public void saveContributionScore(ContributionRequest request) {
 //    }
