@@ -1,9 +1,9 @@
 package com.example.main_server.common.repository;
 
-import com.example.main_server.common.entity.ExternalUser;
+import com.example.main_server.common.entity.Organization;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface ExternalUserRepository extends JpaRepository<ExternalUser, Long> {
+public interface OrganizationRepository extends JpaRepository<Organization, Long> {
 }
