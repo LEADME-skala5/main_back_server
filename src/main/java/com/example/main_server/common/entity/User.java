@@ -53,19 +53,18 @@ public class User {
     @Column(name = "is_manager", nullable = false, columnDefinition = "TINYINT(1)")
     private Boolean isManager = false;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "department_id", foreignKey = @ForeignKey(name = "fk_user_department"))
-    private Department department;
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "division_id", foreignKey = @ForeignKey(name = "fk_user_division"))
-    private Division division;
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "organization_id", foreignKey = @ForeignKey(name = "fk_user_organization"))
     private Organization organization;
-
     @Column(name = "career_level", nullable = false, length = 50)
     private String careerLevel;
 
+    public Division getDivision() {
+        return organization != null ? organization.getDivision() : null;
+    }
+
+    public Department getDepartment() {
+        Division division = getDivision();
+        return division != null ? division.getDepartment() : null;
+    }
 }

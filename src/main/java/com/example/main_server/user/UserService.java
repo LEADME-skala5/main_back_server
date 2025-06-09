@@ -1,12 +1,8 @@
 package com.example.main_server.user;
 
 
-import com.example.main_server.common.entity.Department;
-import com.example.main_server.common.entity.Division;
 import com.example.main_server.common.entity.Organization;
 import com.example.main_server.common.entity.User;
-import com.example.main_server.common.repository.DepartmentRepository;
-import com.example.main_server.common.repository.DivisionRepository;
 import com.example.main_server.common.repository.OrganizationRepository;
 import com.example.main_server.common.repository.UserRepository;
 import com.example.main_server.user.dto.UserRegisterRequest;
@@ -18,37 +14,52 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
-    private final DepartmentRepository departmentRepository;
-    private final DivisionRepository divisionRepository;
     private final OrganizationRepository organizationRepository;
 //    private final PasswordEncoder passwordEncoder;
 
     public UserResponse register(UserRegisterRequest request) {
-        if (userRepository.findByEmployeeNumber(request.getEmployeeNumber()).isPresent()) {
+        // 사번 중복 검사
+        if (userRepository.findByEmployeeNumber(request.employeeNumber()).isPresent()) {
             throw new IllegalArgumentException("이미 가입된 사번입니다.");
         }
 
-        Department department = departmentRepository.findById(request.getDepartmentId())
-                .orElseThrow(() -> new IllegalArgumentException("부문 없음"));
-        Division division = divisionRepository.findById(request.getDivisionId())
-                .orElseThrow(() -> new IllegalArgumentException("본부 없음"));
-        Organization organization = organizationRepository.findById(request.getOrganizationId())
-                .orElseThrow(() -> new IllegalArgumentException("조직 없음"));
+        // Teams 이메일 중복 검사
+        if (userRepository.findByTeamsEmail(request.teamsEmail()).isPresent()) {
+            throw new IllegalArgumentException("이미 가입된 Teams 이메일입니다.");
+        }
 
+        // Primary 이메일 중복 검사 (null이 아닌 경우만)
+        if (request.primaryEmail() != null &&
+                userRepository.findByPrimaryEmail(request.primaryEmail()).isPresent()) {
+            throw new IllegalArgumentException("이미 가입된 Primary 이메일입니다.");
+        }
+
+        // 조직 존재 여부 확인
+        Organization organization = organizationRepository.findById(request.organizationId())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 조직입니다."));
+
+        // 사용자 생성
+        User user = createUser(request, organization);
+
+        User savedUser = userRepository.save(user);
+        return new UserResponse(savedUser);
+    }
+
+    private User createUser(UserRegisterRequest request, Organization organization) {
         User user = new User();
-        user.setName(request.getName());
-        user.setTeamsEmail(request.getTeamsEmail());
-//        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setEmployeeNumber(request.getEmployeeNumber());
-        user.setPrimaryEmail(request.getPrimaryEmail());
-        user.setSlackEmail(request.getSlackEmail());
-        user.setCareerLevel(request.getCareerLevel());
-        user.setIsManager(request.getIsManager());
-        user.setDepartment(department);
-        user.setDivision(division);
+        user.setName(request.name());
+        user.setTeamsEmail(request.teamsEmail());
+        user.setEmployeeNumber(request.employeeNumber());
+        user.setPrimaryEmail(request.primaryEmail());
+        user.setSlackEmail(request.slackEmail());
+        user.setCareerLevel(request.careerLevel());
+        user.setIsManager(request.isManager());
         user.setOrganization(organization);
 
-        userRepository.save(user);
-        return new UserResponse(user);
+        // 비밀번호 암호화
+        // user.setPassword(passwordEncoder.encode(request.password()));
+
+        return user;
     }
+
 }
