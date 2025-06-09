@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sk-team-05-back-deployment
+  namespace: sk-team-05
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sk-team-05-back
+  template:
+    metadata:
+      labels:
+        app: sk-team-05-back
+    spec:
+      containers:
+        - name: sk-team-05-back
+          image: idealhyun2/leadme5-back:latest
+          ports:
+            - containerPort: 80
