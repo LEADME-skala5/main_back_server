@@ -90,7 +90,7 @@ public class PeerEvaluationService {
         // 일괄 저장
         List<PeerKeywordEvaluation> savedEvaluations = peerKeywordEvaluationRepository.saveAll(evaluations);
 
-        return new PeerKeywordEvaluationResponse("동료 평가가 성공적으로 저장되었습니다.", evaluations.size());
+        return new PeerKeywordEvaluationResponse("동료 평가가 성공적으로 저장되었습니다.", savedEvaluations.size());
     }
 
     private void validateRequest(PeerKeywordEvaluationRequest request) {

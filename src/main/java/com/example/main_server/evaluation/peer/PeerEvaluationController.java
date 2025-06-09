@@ -3,6 +3,7 @@ package com.example.main_server.evaluation.peer;
 import com.example.main_server.evaluation.peer.dto.EvaluationKeywordResponse;
 import com.example.main_server.evaluation.peer.dto.PeerInfoResponse;
 import com.example.main_server.evaluation.peer.dto.PeerKeywordEvaluationRequest;
+import com.example.main_server.evaluation.peer.dto.PeerKeywordEvaluationResponse;
 import com.example.main_server.evaluation.peer.entity.EvaluationKeyword;
 import java.net.URI;
 import java.util.List;
@@ -36,10 +37,11 @@ public class PeerEvaluationController {
     }
 
     @PostMapping("/keyword-evaluation")
-    public ResponseEntity<Void> savePeerKeywords(@RequestBody PeerKeywordEvaluationRequest request) {
-        peerEvaluationService.savePeerKeywords(request);
+    public ResponseEntity<PeerKeywordEvaluationResponse> savePeerKeywords(
+            @RequestBody PeerKeywordEvaluationRequest request) {
+        PeerKeywordEvaluationResponse response = peerEvaluationService.savePeerKeywords(request);
         URI location = URI.create("/keyword-evaluation");
-        return ResponseEntity.created(location).build();
+        return ResponseEntity.created(location).body(response);
     }
 
 //    @PostMapping("/contribution-evaluation")
