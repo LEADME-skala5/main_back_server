@@ -58,6 +58,12 @@ public class User {
     private Organization organization;
     @Column(name = "career_level", nullable = false, length = 50)
     private String careerLevel;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "department_id", nullable = false)
+    private Department department;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "division_id", nullable = false)
+    private Division division;
 
     public Division getDivision() {
         return organization != null ? organization.getDivision() : null;
