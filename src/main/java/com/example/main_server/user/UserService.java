@@ -55,11 +55,24 @@ public class UserService {
         user.setCareerLevel(request.careerLevel());
         user.setIsManager(request.isManager());
         user.setOrganization(organization);
+        user.setPassword(request.password());
 
         // 비밀번호 암호화
         // user.setPassword(passwordEncoder.encode(request.password()));
 
         return user;
     }
+
+    public User login(String employeeNumber, String password) {
+        return userRepository.findByEmployeeNumber(employeeNumber)
+                .map(user -> {
+                    if (user.getPassword() == null || !user.getPassword().equals(password)) {
+                        throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+                    }
+                    return user;
+                })
+                .orElseThrow(() -> new IllegalArgumentException("등록된 사번이 없습니다."));
+    }
+
 
 }
