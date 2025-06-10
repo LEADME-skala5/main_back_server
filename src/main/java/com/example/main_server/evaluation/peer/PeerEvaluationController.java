@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class PeerEvaluationController {
     private final PeerEvaluationService peerEvaluationService;
 
-    @GetMapping("/{userId}")
+    @GetMapping("/peers/{userId}")
     public ResponseEntity<List<PeerInfoResponse>> getPeers(@PathVariable Long userId) {
         List<PeerInfoResponse> peers = peerEvaluationService.getPeers(userId);
         return ResponseEntity.ok(peers);
