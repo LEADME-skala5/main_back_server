@@ -2,13 +2,15 @@ package com.example.main_server.user.dto;
 
 public record UserRegisterRequest(
         String name,
-        String teamsEmail,
-        String password,
         String employeeNumber,
-        String primaryEmail,
+        String password,
+        String teamsEmail,
         String slackEmail,
-        String careerLevel,
+        String localPath,
+        Long departmentId,
+        Long divisionId,
+        Long organizationId,
         Boolean isManager,
-        Long organizationId
+        String careerLevel
 ) {
 }

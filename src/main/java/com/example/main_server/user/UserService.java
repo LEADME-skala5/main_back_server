@@ -1,8 +1,12 @@
 package com.example.main_server.user;
 
 
+import com.example.main_server.common.entity.Department;
+import com.example.main_server.common.entity.Division;
 import com.example.main_server.common.entity.Organization;
 import com.example.main_server.common.entity.User;
+import com.example.main_server.common.repository.DepartmentRepository;
+import com.example.main_server.common.repository.DivisionRepository;
 import com.example.main_server.common.repository.OrganizationRepository;
 import com.example.main_server.common.repository.UserRepository;
 import com.example.main_server.user.dto.UserRegisterRequest;
@@ -15,6 +19,9 @@ import org.springframework.stereotype.Service;
 public class UserService {
     private final UserRepository userRepository;
     private final OrganizationRepository organizationRepository;
+    private final DepartmentRepository departmentRepository;
+    private final DivisionRepository divisionRepository;
+
 //    private final PasswordEncoder passwordEncoder;
 
     public UserResponse register(UserRegisterRequest request) {
@@ -28,35 +35,36 @@ public class UserService {
             throw new IllegalArgumentException("이미 가입된 Teams 이메일입니다.");
         }
 
-        // Primary 이메일 중복 검사 (null이 아닌 경우만)
-        if (request.primaryEmail() != null &&
-                userRepository.findByPrimaryEmail(request.primaryEmail()).isPresent()) {
-            throw new IllegalArgumentException("이미 가입된 Primary 이메일입니다.");
-        }
-
         // 조직 존재 여부 확인
         Organization organization = organizationRepository.findById(request.organizationId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 조직입니다."));
 
-        // 사용자 생성
-        User user = createUser(request, organization);
+        Department department = departmentRepository.findById(request.departmentId())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 부서입니다."));
+
+        Division division = divisionRepository.findById(request.divisionId())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 본부입니다."));
+
+        User user = createUser(request, organization, department, division);
 
         User savedUser = userRepository.save(user);
         return new UserResponse(savedUser);
     }
 
-    private User createUser(UserRegisterRequest request, Organization organization) {
+    private User createUser(UserRegisterRequest request, Organization organization, Department department,
+                            Division division) {
         User user = new User();
         user.setName(request.name());
-        user.setTeamsEmail(request.teamsEmail());
         user.setEmployeeNumber(request.employeeNumber());
-        user.setPrimaryEmail(request.primaryEmail());
-        user.setSlackEmail(request.slackEmail());
-        user.setCareerLevel(request.careerLevel());
-        user.setIsManager(request.isManager());
-        user.setOrganization(organization);
         user.setPassword(request.password());
-
+        user.setTeamsEmail(request.teamsEmail());
+        user.setSlackEmail(request.slackEmail());
+        user.setLocalPath(request.localPath());
+        user.setDepartment(department);
+        user.setDivision(division);
+        user.setOrganization(organization);
+        user.setIsManager(request.isManager());
+        user.setCareerLevel(request.careerLevel());
         // 비밀번호 암호화
         // user.setPassword(passwordEncoder.encode(request.password()));
 
@@ -73,6 +81,5 @@ public class UserService {
                 })
                 .orElseThrow(() -> new IllegalArgumentException("등록된 사번이 없습니다."));
     }
-
 
 }
