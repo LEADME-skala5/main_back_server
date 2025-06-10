@@ -1,12 +1,17 @@
-# 빌드
-FROM eclipse-temurin:21-jdk AS builder
-WORKDIR /
-COPY . .
-RUN ./gradlew build --no-daemon
+# 실행 전용 이미지 (빌드는 GitHub Actions에서 수행)
+FROM eclipse-temurin:21-jre-alpine
 
-# 실행
-FROM eclipse-temurin:21-jre
 WORKDIR /app
-COPY --from=builder /build/libs/*-SNAPSHOT.jar app.jar
+
+# JAR 파일 복사 (GitHub Actions에서 빌드된 것)
+COPY build/libs/*-SNAPSHOT.jar app.jar
+
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "/app.jar"]
+
+# 성능 최적화를 위한 JVM 옵션
+ENTRYPOINT ["java", \
+    "-Djava.security.egd=file:/dev/./urandom", \
+    "-XX:+UseContainerSupport", \
+    "-XX:MaxRAMPercentage=75.0", \
+    "-jar", \
+    "app.jar"]
