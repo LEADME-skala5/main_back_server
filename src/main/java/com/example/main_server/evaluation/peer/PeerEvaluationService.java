@@ -2,6 +2,7 @@ package com.example.main_server.evaluation.peer;
 
 import com.example.main_server.common.entity.User;
 import com.example.main_server.common.repository.UserRepository;
+import com.example.main_server.evaluation.common.dto.TaskInfoResponse;
 import com.example.main_server.evaluation.common.entity.Task;
 import com.example.main_server.evaluation.common.entity.TaskParticipation;
 import com.example.main_server.evaluation.common.repository.TaskParticipationRepository;
@@ -21,8 +22,10 @@ import com.example.main_server.evaluation.peer.repository.PeerTaskContributionEv
 import com.example.main_server.util.exception.UserNotFoundException;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -44,7 +47,7 @@ public class PeerEvaluationService {
         List<TaskParticipation> userParticipation = taskParticipationRepository.findByUserId(userId);
 
         // 2. 각 task에 대해 다른 참여자들 조회
-        Set<PeerInfoResponse> peers = new HashSet<>();
+        Map<Long, List<TaskInfoResponse>> peerTaskMap = new HashMap<>();
 
         for (TaskParticipation participation : userParticipation) {
             Long taskId = participation.getTask().getId();
@@ -53,17 +56,47 @@ public class PeerEvaluationService {
             List<TaskParticipation> otherParticipants =
                     taskParticipationRepository.findByTaskIdAndUserIdNot(taskId, userId);
 
-            // 4. PeerInfoResponse로 변환하여 Set에 추가 (중복 제거)
+            // 4. 각 동료별로 공통 참여 Task 정보 수집
             for (TaskParticipation otherParticipation : otherParticipants) {
-                peers.add(new PeerInfoResponse(
-                        otherParticipation.getUser().getId(),
-                        otherParticipation.getUser().getName()
-                ));
+                Long peerId = otherParticipation.getUser().getId();
+
+                // 해당 동료와 공통으로 참여한 모든 Task 조회
+                List<Task> commonTasks = taskParticipationRepository.findCommonTasksByUserIds(userId, peerId);
+
+                List<TaskInfoResponse> taskInfoList = commonTasks.stream()
+                        .map(task -> new TaskInfoResponse(task.getId(), task.getName()))
+                        .toList();
+
+                peerTaskMap.put(peerId, taskInfoList);
             }
         }
 
-        return new ArrayList<>(peers);
+        // 5. 중복 제거된 동료 목록 생성
+        Set<Long> processedPeerIds = new HashSet<>();
+        List<PeerInfoResponse> peers = new ArrayList<>();
+
+        for (TaskParticipation participation : userParticipation) {
+            Long taskId = participation.getTask().getId();
+            List<TaskParticipation> otherParticipants =
+                    taskParticipationRepository.findByTaskIdAndUserIdNot(taskId, userId);
+
+            for (TaskParticipation otherParticipation : otherParticipants) {
+                Long peerId = otherParticipation.getUser().getId();
+
+                if (!processedPeerIds.contains(peerId)) {
+                    peers.add(new PeerInfoResponse(
+                            peerId,
+                            otherParticipation.getUser().getName(),
+                            peerTaskMap.get(peerId)
+                    ));
+                    processedPeerIds.add(peerId);
+                }
+            }
+        }
+
+        return peers;
     }
+
 
     public List<EvaluationKeyword> getKeywords() {
         return evaluationKeywordRepository.findAll();
