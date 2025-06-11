@@ -2,6 +2,8 @@ package com.example.main_server.common.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.ForeignKey;
 import jakarta.persistence.GeneratedValue;
@@ -53,14 +55,18 @@ public class User {
     @Column(name = "is_manager", nullable = false, columnDefinition = "TINYINT(1)")
     private Boolean isManager = false;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "career_level", nullable = false)
+    private CareerLevel careerLevel;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "organization_id", foreignKey = @ForeignKey(name = "fk_user_organization"))
     private Organization organization;
-    @Column(name = "career_level", nullable = false, length = 50)
-    private String careerLevel;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "department_id", nullable = false)
     private Department department;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "division_id", nullable = false)
     private Division division;
