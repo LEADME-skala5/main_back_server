@@ -1,5 +1,6 @@
 package com.example.main_server.evaluation.common.entity;
 
+import com.example.main_server.common.entity.BaseEntity;
 import com.example.main_server.common.entity.Organization;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -15,11 +16,13 @@ import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
 @Entity
 @Table(name = "tasks")
-public class Task {
+public class Task extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

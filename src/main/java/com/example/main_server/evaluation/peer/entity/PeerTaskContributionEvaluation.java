@@ -1,5 +1,6 @@
 package com.example.main_server.evaluation.peer.entity;
 
+import com.example.main_server.common.entity.BaseEntity;
 import com.example.main_server.common.entity.User;
 import com.example.main_server.evaluation.common.entity.Task;
 import jakarta.persistence.Column;
@@ -13,11 +14,13 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
 @Entity
 @Table(name = "peer_task_contribution_evaluations")
-public class PeerTaskContributionEvaluation {
+public class PeerTaskContributionEvaluation extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

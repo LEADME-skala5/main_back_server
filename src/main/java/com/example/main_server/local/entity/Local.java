@@ -1,5 +1,6 @@
 package com.example.main_server.local.entity;
 
+import com.example.main_server.common.entity.BaseEntity;
 import com.example.main_server.common.entity.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -21,7 +22,7 @@ import lombok.Setter;
 @Table(name = "local_files")
 @Getter
 @Setter
-public class Local {
+public class Local extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "file_id")

@@ -1,5 +1,6 @@
 package com.example.main_server.evaluation.qualitative.entity;
 
+import com.example.main_server.common.entity.BaseEntity;
 import com.example.main_server.common.entity.Organization;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -10,17 +11,17 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
 
+@EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "qualitative_evaluation_criteria")
 @Data
 @NoArgsConstructor
-public class QualitativeEvaluationCriteria {
+public class QualitativeEvaluationCriteria extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,10 +34,6 @@ public class QualitativeEvaluationCriteria {
 
     @Column(name = "keyword", nullable = false, length = 100)
     private String keyword;
-
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
 
     @Builder
     public QualitativeEvaluationCriteria(Organization organization, String keyword) {

@@ -6,13 +6,14 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import java.sql.Timestamp;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
 @Entity
 @Table(name = "external_users")
-public class ExternalUser {
+public class ExternalUser extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -26,8 +27,4 @@ public class ExternalUser {
 
     @Column(name = "source")
     private String source;
-
-    @Column(name = "created_at")
-    private Timestamp createdAt;
-
 }
