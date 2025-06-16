@@ -1,5 +1,6 @@
 package com.example.main_server.slack.chat.entity;
 
+import com.example.main_server.common.entity.BaseEntity;
 import com.example.main_server.common.entity.User;
 import com.example.main_server.slack.team.entity.SlackTeam;
 import jakarta.persistence.Column;
@@ -11,11 +12,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import java.sql.Timestamp;
 
 @Entity
 @Table(name = "slack_files")
-public class SlackFile {
+public class SlackFile extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -44,9 +44,6 @@ public class SlackFile {
 
     @Column(name = "client_msg_id")
     private String clientMsgId;
-
-    @Column(name = "collected_at")
-    private Timestamp collectedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
