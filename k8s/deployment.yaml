@@ -18,3 +18,19 @@ spec:
           image: idealhyun2/leadme5-back:latest
           ports:
             - containerPort: 80
+          env:
+            - name: DB_URL
+              valueFrom:
+                secretKeyRef:
+                  name: sk-team-05-mariadb-secret
+                  key: DB_URL
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: sk-team-05-mariadb-secret
+                  key: DB_USERNAME
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: sk-team-05-mariadb-secret
+                  key: DB_PASSWORD
