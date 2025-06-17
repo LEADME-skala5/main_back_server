@@ -49,6 +49,26 @@ spec:
                 secretKeyRef:
                   name: sk-team-05-back-secret
                   key: MONGO_DB_URL
+            - name: GRAPH_API_TENANT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: sk-team-05-back-secret
+                  key: GRAPH_API_TENANT_ID
+            - name: GRAPH_API_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: sk-team-05-back-secret
+                  key: GRAPH_API_CLIENT_ID
+            - name: GRAPH_API_SCOPE
+              valueFrom:
+                secretKeyRef:
+                  name: sk-team-05-back-secret
+                  key: GRAPH_API_SCOPE
+            - name: GRAPH_API_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: sk-team-05-back-secret
+                  key: GRAPH_API_CLIENT_SECRET
             - name: PORT
               valueFrom:
                 secretKeyRef:
