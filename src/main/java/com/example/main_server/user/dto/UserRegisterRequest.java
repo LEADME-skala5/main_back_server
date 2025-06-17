@@ -1,5 +1,7 @@
 package com.example.main_server.user.dto;
 
+import com.example.main_server.common.entity.CareerLevel;
+
 public record UserRegisterRequest(
         String name,
         String employeeNumber,
@@ -11,6 +13,6 @@ public record UserRegisterRequest(
         Long divisionId,
         Long organizationId,
         Boolean isManager,
-        String careerLevel
+        CareerLevel careerLevel
 ) {
 }
