@@ -62,6 +62,10 @@ public class User extends BaseEntity {
     private CareerLevel careerLevel;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "job_id", nullable = false)
+    private Job job;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "organization_id", foreignKey = @ForeignKey(name = "fk_user_organization"))
     private Organization organization;
 
