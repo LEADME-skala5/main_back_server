@@ -2,7 +2,7 @@ name: CI
 on:
   push:
     branches:
-      - feat/ci-cd
+      - main
 
 jobs:
   build-and-push:
