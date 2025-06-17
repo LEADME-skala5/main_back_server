@@ -17,7 +17,7 @@ spec:
         - name: sk-team-05-back
           image: idealhyun2/leadme5-back:latest
           ports:
-            - containerPort: 80
+            - containerPort: 8080
           env:
             - name: DB_URL
               valueFrom:
