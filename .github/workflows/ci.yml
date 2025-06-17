@@ -53,7 +53,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/leadme5-backend:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/leadme5-back:latest
 
       # docker/build-push-action의 출력에서 이미지 Digest 가져오기
       - name: Get image digest
@@ -64,5 +64,5 @@ jobs:
       - name: Update Kubernetes YAML with new image digest
         run: |
           echo "Updating deployment.yaml with new image digest: ${{ env.IMAGE_DIGEST }}"
-          sed -i 's|image: ${{ secrets.DOCKERHUB_USERNAME }}/leadme5-backend.*|image: ${{ secrets.DOCKERHUB_USERNAME }}/leadme5-backend@${{ env.IMAGE_DIGEST }}|g' k8s/deployment.yaml
+          sed -i 's|image: ${{ secrets.DOCKERHUB_USERNAME }}/leadme5-back.*|image: ${{ secrets.DOCKERHUB_USERNAME }}/leadme5-back@${{ env.IMAGE_DIGEST }}|g' k8s/deployment.yaml
 
