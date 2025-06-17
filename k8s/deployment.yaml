@@ -22,15 +22,35 @@ spec:
             - name: DB_URL
               valueFrom:
                 secretKeyRef:
-                  name: sk-team-05-mariadb-secret
+                  name: sk-team-05-back-secret
                   key: DB_URL
             - name: DB_USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: sk-team-05-mariadb-secret
+                  name: sk-team-05-back-secret
                   key: DB_USERNAME
             - name: DB_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: sk-team-05-mariadb-secret
+                  name: sk-team-05-back-secret
                   key: DB_PASSWORD
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: sk-team-05-back-secret
+                  key: REDIS_URL
+            - name: REDIS_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: sk-team-05-back-secret
+                  key: REDIS_PORT
+            - name: MONGO_DB_URL
+              valueFrom:
+                secretKeyRef:
+                  name: sk-team-05-back-secret
+                  key: MONGO_DB_URL
+            - name: PORT
+              valueFrom:
+                secretKeyRef:
+                  name: sk-team-05-back-secret
+                  key: PORT
