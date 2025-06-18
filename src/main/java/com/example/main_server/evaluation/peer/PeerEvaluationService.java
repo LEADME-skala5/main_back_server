@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -104,11 +105,28 @@ public class PeerEvaluationService {
         return evaluationKeywordRepository.findAll();
     }
 
+    // TODO: 동료 평가 여부 파악 추가해야함
     @Transactional
     public PeerKeywordEvaluationResponse savePeerKeywords(PeerKeywordEvaluationRequest request) {
 
         User evaluator = userRepository.findById(request.evaluatorUserId())
                 .orElseThrow(() -> new UserNotFoundException("평가자를 찾을 수 없습니다. ID: " + request.evaluatorUserId()));
+
+        // 1. 필요한 모든 ID를 미리 추출
+        List<Long> allEvaluateeIds = request.evaluations().stream()
+                .map(PeerKeywordEvaluationRequest.Evaluation::evaluateeUserId)
+                .toList();
+
+        List<Long> allKeywordIds = request.evaluations().stream()
+                .flatMap(eval -> eval.keywordIds().stream())
+                .distinct()
+                .toList();
+
+        Map<Long, User> evaluateeMap = userRepository.findAllById(allEvaluateeIds).stream()
+                .collect(Collectors.toMap(User::getId, user -> user));
+
+        Map<Long, EvaluationKeyword> keywordMap = evaluationKeywordRepository.findAllById(allKeywordIds).stream()
+                .collect(Collectors.toMap(EvaluationKeyword::getId, keyword -> keyword));
 
         List<PeerKeywordEvaluation> evaluations = new ArrayList<>();
 
@@ -117,16 +135,20 @@ public class PeerEvaluationService {
                 throw new InvalidEvaluationRequestException("자기 자신을 평가할 수 없습니다.");
             }
 
-            User evaluatee = userRepository.findById(eval.evaluateeUserId())
-                    .orElseThrow(() -> new UserNotFoundException("피평가자를 찾을 수 없습니다. ID: " + eval.evaluateeUserId()));
+            User evaluatee = evaluateeMap.get(eval.evaluateeUserId());
+            if (evaluatee == null) {
+                throw new UserNotFoundException("피평가자를 찾을 수 없습니다. ID: " + eval.evaluateeUserId());
+            }
 
             if (eval.keywordIds() == null || eval.keywordIds().isEmpty()) {
                 throw new InvalidEvaluationRequestException("키워드 ID 목록이 비어있습니다. 피평가자 ID: " + eval.evaluateeUserId());
             }
 
             for (Long keywordId : eval.keywordIds()) {
-                EvaluationKeyword keyword = evaluationKeywordRepository.findById(keywordId)
-                        .orElseThrow(() -> new KeywordNotFoundException("키워드를 찾을 수 없습니다. ID: " + keywordId));
+                EvaluationKeyword keyword = keywordMap.get(keywordId);
+                if (keyword == null) {
+                    throw new KeywordNotFoundException("키워드를 찾을 수 없습니다. ID: " + keywordId);
+                }
 
                 PeerKeywordEvaluation evaluation = new PeerKeywordEvaluation();
                 evaluation.setEvaluator(evaluator);
@@ -140,6 +162,7 @@ public class PeerEvaluationService {
         }
 
         List<PeerKeywordEvaluation> savedEvaluations = peerKeywordEvaluationRepository.saveAll(evaluations);
+
         return new PeerKeywordEvaluationResponse("동료 평가가 성공적으로 저장되었습니다.", savedEvaluations.size());
     }
 
