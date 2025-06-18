@@ -35,6 +35,8 @@ import org.springframework.stereotype.Service;
 public class PeerEvaluationService {
     private static final int MAX_CONTRIBUTION_SCORE = 100;
     private static final int MIN_CONTRIBUTION_SCORE = 1;
+    private static final int YEAR = 2025;
+    private static final int QUARTER = 2;
     private final EvaluationKeywordRepository evaluationKeywordRepository;
     private final TaskParticipationRepository taskParticipationRepository;
     private final PeerKeywordEvaluationRepository peerKeywordEvaluationRepository;
@@ -130,6 +132,8 @@ public class PeerEvaluationService {
                 evaluation.setEvaluator(evaluator);
                 evaluation.setEvaluatee(evaluatee);
                 evaluation.setKeyword(keyword);
+                evaluation.setEvaluationYear(YEAR);
+                evaluation.setEvaluationQuarter(QUARTER);
 
                 evaluations.add(evaluation);
             }
