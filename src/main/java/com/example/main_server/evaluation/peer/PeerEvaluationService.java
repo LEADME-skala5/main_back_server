@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -35,6 +36,8 @@ import org.springframework.stereotype.Service;
 public class PeerEvaluationService {
     private static final int MAX_CONTRIBUTION_SCORE = 100;
     private static final int MIN_CONTRIBUTION_SCORE = 1;
+    private static final int YEAR = 2025;
+    private static final int QUARTER = 2;
     private final EvaluationKeywordRepository evaluationKeywordRepository;
     private final TaskParticipationRepository taskParticipationRepository;
     private final PeerKeywordEvaluationRepository peerKeywordEvaluationRepository;
@@ -102,51 +105,65 @@ public class PeerEvaluationService {
         return evaluationKeywordRepository.findAll();
     }
 
+    // TODO: 동료 평가 여부 파악 추가해야함
     @Transactional
     public PeerKeywordEvaluationResponse savePeerKeywords(PeerKeywordEvaluationRequest request) {
-        // 입력 값 검증
-        validateRequest(request);
 
-        // 사용자 조회
         User evaluator = userRepository.findById(request.evaluatorUserId())
                 .orElseThrow(() -> new UserNotFoundException("평가자를 찾을 수 없습니다. ID: " + request.evaluatorUserId()));
 
-        User evaluatee = userRepository.findById(request.evaluateeUserId())
-                .orElseThrow(() -> new UserNotFoundException("피평가자를 찾을 수 없습니다. ID: " + request.evaluateeUserId()));
+        // 1. 필요한 모든 ID를 미리 추출
+        List<Long> allEvaluateeIds = request.evaluations().stream()
+                .map(PeerKeywordEvaluationRequest.Evaluation::evaluateeUserId)
+                .toList();
+
+        List<Long> allKeywordIds = request.evaluations().stream()
+                .flatMap(eval -> eval.keywordIds().stream())
+                .distinct()
+                .toList();
+
+        Map<Long, User> evaluateeMap = userRepository.findAllById(allEvaluateeIds).stream()
+                .collect(Collectors.toMap(User::getId, user -> user));
+
+        Map<Long, EvaluationKeyword> keywordMap = evaluationKeywordRepository.findAllById(allKeywordIds).stream()
+                .collect(Collectors.toMap(EvaluationKeyword::getId, keyword -> keyword));
 
         List<PeerKeywordEvaluation> evaluations = new ArrayList<>();
 
-        // 각 키워드별로 평가 엔티티 생성
-        for (Long keywordId : request.keywordIds()) {
-            EvaluationKeyword keyword = evaluationKeywordRepository.findById(keywordId)
-                    .orElseThrow(() -> new KeywordNotFoundException("키워드를 찾을 수 없습니다. ID: " + keywordId));
+        for (PeerKeywordEvaluationRequest.Evaluation eval : request.evaluations()) {
+            if (request.evaluatorUserId().equals(eval.evaluateeUserId())) {
+                throw new InvalidEvaluationRequestException("자기 자신을 평가할 수 없습니다.");
+            }
 
-            PeerKeywordEvaluation evaluation = new PeerKeywordEvaluation();
-            evaluation.setEvaluator(evaluator);
-            evaluation.setEvaluatee(evaluatee);
-            evaluation.setKeyword(keyword);
+            User evaluatee = evaluateeMap.get(eval.evaluateeUserId());
+            if (evaluatee == null) {
+                throw new UserNotFoundException("피평가자를 찾을 수 없습니다. ID: " + eval.evaluateeUserId());
+            }
 
-            evaluations.add(evaluation);
+            if (eval.keywordIds() == null || eval.keywordIds().isEmpty()) {
+                throw new InvalidEvaluationRequestException("키워드 ID 목록이 비어있습니다. 피평가자 ID: " + eval.evaluateeUserId());
+            }
+
+            for (Long keywordId : eval.keywordIds()) {
+                EvaluationKeyword keyword = keywordMap.get(keywordId);
+                if (keyword == null) {
+                    throw new KeywordNotFoundException("키워드를 찾을 수 없습니다. ID: " + keywordId);
+                }
+
+                PeerKeywordEvaluation evaluation = new PeerKeywordEvaluation();
+                evaluation.setEvaluator(evaluator);
+                evaluation.setEvaluatee(evaluatee);
+                evaluation.setKeyword(keyword);
+                evaluation.setEvaluationYear(YEAR);
+                evaluation.setEvaluationQuarter(QUARTER);
+
+                evaluations.add(evaluation);
+            }
         }
 
-        // 일괄 저장
         List<PeerKeywordEvaluation> savedEvaluations = peerKeywordEvaluationRepository.saveAll(evaluations);
 
         return new PeerKeywordEvaluationResponse("동료 평가가 성공적으로 저장되었습니다.", savedEvaluations.size());
-    }
-
-    private void validateRequest(PeerKeywordEvaluationRequest request) {
-        if (request.keywordIds() == null || request.keywordIds().isEmpty()) {
-            throw new InvalidEvaluationRequestException("키워드 ID 목록이 비어있습니다.");
-        }
-
-        if (request.evaluatorUserId().equals(request.evaluateeUserId())) {
-            throw new InvalidEvaluationRequestException("자기 자신을 평가할 수 없습니다.");
-        }
-
-        if (request.evaluateeUserId() == null) {
-            throw new InvalidEvaluationRequestException("평가자와 피평가자 ID는 필수입니다.");
-        }
     }
 
     @Transactional

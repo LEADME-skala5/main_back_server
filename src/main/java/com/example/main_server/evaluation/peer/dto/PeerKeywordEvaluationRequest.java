@@ -4,6 +4,12 @@ import java.util.List;
 
 public record PeerKeywordEvaluationRequest(
         Long evaluatorUserId,
-        Long evaluateeUserId,
-        List<Long> keywordIds) {
+        List<Evaluation> evaluations
+) {
+    public record Evaluation(
+            Long evaluateeUserId,
+            List<Long> keywordIds
+    ) {
+    }
 }
+
