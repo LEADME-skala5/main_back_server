@@ -104,49 +104,39 @@ public class PeerEvaluationService {
 
     @Transactional
     public PeerKeywordEvaluationResponse savePeerKeywords(PeerKeywordEvaluationRequest request) {
-        // 입력 값 검증
-        validateRequest(request);
 
-        // 사용자 조회
         User evaluator = userRepository.findById(request.evaluatorUserId())
                 .orElseThrow(() -> new UserNotFoundException("평가자를 찾을 수 없습니다. ID: " + request.evaluatorUserId()));
 
-        User evaluatee = userRepository.findById(request.evaluateeUserId())
-                .orElseThrow(() -> new UserNotFoundException("피평가자를 찾을 수 없습니다. ID: " + request.evaluateeUserId()));
-
         List<PeerKeywordEvaluation> evaluations = new ArrayList<>();
 
-        // 각 키워드별로 평가 엔티티 생성
-        for (Long keywordId : request.keywordIds()) {
-            EvaluationKeyword keyword = evaluationKeywordRepository.findById(keywordId)
-                    .orElseThrow(() -> new KeywordNotFoundException("키워드를 찾을 수 없습니다. ID: " + keywordId));
+        for (PeerKeywordEvaluationRequest.Evaluation eval : request.evaluations()) {
+            if (request.evaluatorUserId().equals(eval.evaluateeUserId())) {
+                throw new InvalidEvaluationRequestException("자기 자신을 평가할 수 없습니다.");
+            }
 
-            PeerKeywordEvaluation evaluation = new PeerKeywordEvaluation();
-            evaluation.setEvaluator(evaluator);
-            evaluation.setEvaluatee(evaluatee);
-            evaluation.setKeyword(keyword);
+            User evaluatee = userRepository.findById(eval.evaluateeUserId())
+                    .orElseThrow(() -> new UserNotFoundException("피평가자를 찾을 수 없습니다. ID: " + eval.evaluateeUserId()));
 
-            evaluations.add(evaluation);
+            if (eval.keywordIds() == null || eval.keywordIds().isEmpty()) {
+                throw new InvalidEvaluationRequestException("키워드 ID 목록이 비어있습니다. 피평가자 ID: " + eval.evaluateeUserId());
+            }
+
+            for (Long keywordId : eval.keywordIds()) {
+                EvaluationKeyword keyword = evaluationKeywordRepository.findById(keywordId)
+                        .orElseThrow(() -> new KeywordNotFoundException("키워드를 찾을 수 없습니다. ID: " + keywordId));
+
+                PeerKeywordEvaluation evaluation = new PeerKeywordEvaluation();
+                evaluation.setEvaluator(evaluator);
+                evaluation.setEvaluatee(evaluatee);
+                evaluation.setKeyword(keyword);
+
+                evaluations.add(evaluation);
+            }
         }
 
-        // 일괄 저장
         List<PeerKeywordEvaluation> savedEvaluations = peerKeywordEvaluationRepository.saveAll(evaluations);
-
         return new PeerKeywordEvaluationResponse("동료 평가가 성공적으로 저장되었습니다.", savedEvaluations.size());
-    }
-
-    private void validateRequest(PeerKeywordEvaluationRequest request) {
-        if (request.keywordIds() == null || request.keywordIds().isEmpty()) {
-            throw new InvalidEvaluationRequestException("키워드 ID 목록이 비어있습니다.");
-        }
-
-        if (request.evaluatorUserId().equals(request.evaluateeUserId())) {
-            throw new InvalidEvaluationRequestException("자기 자신을 평가할 수 없습니다.");
-        }
-
-        if (request.evaluateeUserId() == null) {
-            throw new InvalidEvaluationRequestException("평가자와 피평가자 ID는 필수입니다.");
-        }
     }
 
     @Transactional
