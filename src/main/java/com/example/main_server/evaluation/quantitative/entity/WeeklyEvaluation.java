@@ -33,6 +33,12 @@ public class WeeklyEvaluation extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "evaluation_year", nullable = false)
+    private int evaluationYear;
+
+    @Column(name = "evaluation_quarter", nullable = false)
+    private int evaluationQuarter;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "evaluator_user_id", nullable = false)
     private User evaluatorUser;

@@ -2,6 +2,7 @@ package com.example.main_server.evaluation.peer.entity;
 
 import com.example.main_server.common.entity.BaseEntity;
 import com.example.main_server.common.entity.User;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.ForeignKey;
@@ -22,6 +23,12 @@ public class PeerKeywordEvaluation extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "evaluation_year", nullable = false)
+    private int evaluationYear;
+
+    @Column(name = "evaluation_quarter", nullable = false)
+    private int evaluationQuarter;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "evaluator_user_id", foreignKey = @ForeignKey(name = "fk_keyword_evaluation_evaluator"))
