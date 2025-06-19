@@ -36,6 +36,9 @@ public class User extends BaseEntity {
     @Column(name = "onedrive_user_id", unique = true, length = 255)
     private String onedriveUserId;
 
+    @Column(name = "job_years", nullable = false)
+    private int jobYears;
+
     @Column(name = "name", nullable = false, length = 100)
     private String name;
 

@@ -34,6 +34,9 @@ public class Task extends BaseEntity {
     @Column(name = "name", nullable = false, length = 255)
     private String name;
 
+    @Column(name = "weight", nullable = false)
+    private int weight;
+
     @OneToMany(mappedBy = "task")
     private List<TaskParticipation> taskParticipations = new ArrayList<>();
 }
