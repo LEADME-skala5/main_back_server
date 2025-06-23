@@ -4,5 +4,5 @@ import java.util.List;
 
 public record QuarterOverviewResponse(
         boolean evaluated,
-        List<UserOverview> users) {
+        List<UserOverviewResponse> users) {
 }

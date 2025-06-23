@@ -11,7 +11,7 @@ import com.example.main_server.evaluation.common.repository.UserQuarterScoreRepo
 import com.example.main_server.evaluation.quantitative.dto.QuarterOverviewResponse;
 import com.example.main_server.evaluation.quantitative.dto.TaskEvaluation;
 import com.example.main_server.evaluation.quantitative.dto.TaskResponse;
-import com.example.main_server.evaluation.quantitative.dto.UserOverview;
+import com.example.main_server.evaluation.quantitative.dto.UserOverviewResponse;
 import com.example.main_server.evaluation.quantitative.dto.WeeklyEvaluationRequest;
 import com.example.main_server.evaluation.quantitative.entity.WeeklyEvaluation;
 import com.example.main_server.evaluation.quantitative.repository.WeeklyEvaluationRepository;
@@ -29,8 +29,8 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class QuantitativeEvaluationService {
-    private static final int YEAR = 2021;
-    private static final int QUARTER = 2;
+    private static final int YEAR = 2024;
+    private static final int QUARTER = 1;
 
     private final WeeklyEvaluationRepository weeklyEvaluationRepository;
     private final UserRepository userRepository;
@@ -85,7 +85,7 @@ public class QuantitativeEvaluationService {
         if (hasUnevaluated) {
             List<User> members = userRepository.findByOrganizationId(orgId);
 
-            List<UserOverview> dtos = members.stream()
+            List<UserOverviewResponse> dtos = members.stream()
                     .map(u -> {
                         // 직접 TaskParticipation 목록을 조회
                         List<TaskParticipation> participations = taskParticipationRepository.findCurrentTaskParticipations(
@@ -94,25 +94,46 @@ public class QuantitativeEvaluationService {
                         List<TaskResponse> taskResponses = participations.stream()
                                 .map(participation -> {
                                     Task task = participation.getTask();
+                                    Long taskId = task.getId();
+
+                                    // 해당 Task가 평가되었는지 확인
+                                    boolean isTaskEvaluated = weeklyEvaluationRepository.isTaskEvaluated(u.getId(),
+                                            taskId, year, quarter);
+
+                                    // Task가 평가되었으면 평가 점수 조회
+                                    Integer grade = isTaskEvaluated ?
+                                            weeklyEvaluationRepository.findTaskEvaluationGrade(u.getId(), taskId, year,
+                                                    quarter) : null;
+
                                     return new TaskResponse(
-                                            task.getId(),
+                                            taskId,
                                             task.getName(),
                                             participation.getStartDate(),
                                             participation.getEndDate(),
-                                            task.getWeight()
+                                            isTaskEvaluated,
+                                            grade
                                     );
                                 })
                                 .toList();
 
-                        return new UserOverview(
+                        // 모든 Task가 평가되었는지 확인 (하나라도 미평가가 있으면 false)
+                        boolean isUserEvaluated = taskResponses.stream().allMatch(TaskResponse::isEvaluated);
+
+                        // 참여 중인 Task가 없는 경우에는 평가가 불가능하므로 true로 설정
+                        if (taskResponses.isEmpty()) {
+                            isUserEvaluated = true;
+                        }
+
+                        return new UserOverviewResponse(
                                 u.getId(),
                                 u.getName(),
                                 u.getJob().getName(),
                                 u.getPrimaryEmail(),
                                 taskResponses,
-                                null,       // score 미정
-                                null,       // rank 미정
-                                null        // lastUpdated 미정
+                                null,           // score 미정
+                                null,           // rank 미정
+                                null,           // lastUpdated 미정
+                                isUserEvaluated // 모든 Task 평가 완료 여부
                         );
                     })
                     .toList();
@@ -123,7 +144,7 @@ public class QuantitativeEvaluationService {
         // 평가가 모두 이루어졌을 경우
         List<UserQuarterScore> scores = userFinalScoreRepository.findByOrgAndPeriod(orgId, year, quarter);
 
-        List<UserOverview> dtos = scores.stream()
+        List<UserOverviewResponse> dtos = scores.stream()
                 .sorted(Comparator.comparing(UserQuarterScore::getFinalScore).reversed())
                 .map(s -> {
                     User u = s.getUser();
@@ -134,17 +155,37 @@ public class QuantitativeEvaluationService {
                     List<TaskResponse> taskResponses = participations.stream()
                             .map(participation -> {
                                 Task task = participation.getTask();
+                                Long taskId = task.getId();
+
+                                // 해당 Task가 평가되었는지 확인
+                                boolean isTaskEvaluated = weeklyEvaluationRepository.isTaskEvaluated(u.getId(), taskId,
+                                        year, quarter);
+
+                                // Task가 평가되었으면 평가 점수 조회
+                                Integer grade = isTaskEvaluated ?
+                                        weeklyEvaluationRepository.findTaskEvaluationGrade(u.getId(), taskId, year,
+                                                quarter) : null;
+
                                 return new TaskResponse(
-                                        task.getId(),
+                                        taskId,
                                         task.getName(),
                                         participation.getStartDate(),
                                         participation.getEndDate(),
-                                        task.getWeight()
+                                        isTaskEvaluated,
+                                        grade
                                 );
                             })
                             .toList();
 
-                    return new UserOverview(
+                    // 평가가 완료된 사용자이지만, 일부 Task만 평가되었을 수 있으므로 재확인
+                    boolean isUserEvaluated = taskResponses.stream().allMatch(TaskResponse::isEvaluated);
+
+                    // 참여 중인 Task가 없는 경우에는 평가가 불가능하므로 true로 설정
+                    if (taskResponses.isEmpty()) {
+                        isUserEvaluated = true;
+                    }
+
+                    return new UserOverviewResponse(
                             u.getId(),
                             u.getName(),
                             u.getJob().getName(),
@@ -152,7 +193,8 @@ public class QuantitativeEvaluationService {
                             taskResponses,
                             s.getFinalScore(),
                             s.getUserRank(),
-                            s.getUpdatedAt().toLocalDate()
+                            s.getUpdatedAt().toLocalDate(),
+                            isUserEvaluated // 모든 Task 평가 완료 여부
                     );
                 })
                 .toList();

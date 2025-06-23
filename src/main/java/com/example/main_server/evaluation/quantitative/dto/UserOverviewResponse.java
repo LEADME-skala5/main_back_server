@@ -4,13 +4,14 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
-public record UserOverview(
+public record UserOverviewResponse(
         Long userId,
         String name,
         String position,
         String email,
-        List<TaskResponse> projects,
+        List<TaskResponse> tasks,
         BigDecimal quarterScore, // null = 미평가
         Integer rank,            // null = 미평가
-        LocalDate lastUpdated) {
+        LocalDate lastUpdated,
+        boolean isUserEvaluated) {
 }

@@ -19,5 +19,34 @@ public interface WeeklyEvaluationRepository extends JpaRepository<WeeklyEvaluati
             """)
     boolean existsUnEvaluatedUsers(Long orgId, int year, int quarter);
 
-    
+    @Query("""
+                select count(we) > 0
+                from WeeklyEvaluation we
+                where we.evaluateeUser.id = :userId
+                  and we.evaluationYear = :year
+                  and we.evaluationQuarter = :quarter
+            """)
+    boolean isUserEvaluated(Long userId, int year, int quarter);
+
+    @Query("""
+                select count(we) > 0
+                from WeeklyEvaluation we
+                where we.evaluateeUser.id = :userId
+                  and we.task.id = :taskId
+                  and we.evaluationYear = :year
+                  and we.evaluationQuarter = :quarter
+            """)
+    boolean isTaskEvaluated(Long userId, Long taskId, int year, int quarter);
+
+    @Query("""
+                select we.grade
+                from WeeklyEvaluation we
+                where we.evaluateeUser.id = :userId
+                  and we.task.id = :taskId
+                  and we.evaluationYear = :year
+                  and we.evaluationQuarter = :quarter
+            """)
+    Integer findTaskEvaluationGrade(Long userId, Long taskId, int year, int quarter);
+
+
 }
