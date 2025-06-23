@@ -39,7 +39,7 @@ public class QuantitativeEvaluationService {
     private final UserQuarterScoreRepository userFinalScoreRepository;
 
     @Transactional
-    public void saveEvaluation(WeeklyEvaluationRequest request) {
+    public String saveEvaluation(WeeklyEvaluationRequest request) {
         User evaluator = userRepository.findById(request.evaluatorUserId())
                 .orElseThrow(() -> new UserNotFoundException("평가자의 ID가 유효하지 않음"));
 
@@ -74,6 +74,8 @@ public class QuantitativeEvaluationService {
         }
 
         weeklyEvaluationRepository.saveAll(evaluations);
+
+        return "저장 완료";
     }
 
     @Transactional

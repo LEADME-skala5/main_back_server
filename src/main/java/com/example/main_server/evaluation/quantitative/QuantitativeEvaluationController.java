@@ -2,6 +2,7 @@ package com.example.main_server.evaluation.quantitative;
 
 import com.example.main_server.evaluation.quantitative.dto.QuarterOverviewResponse;
 import com.example.main_server.evaluation.quantitative.dto.WeeklyEvaluationRequest;
+import java.net.URI;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,8 +21,10 @@ public class QuantitativeEvaluationController {
     private final QuantitativeEvaluationService quantitativeEvaluationService;
 
     @PostMapping("/weekly")
-    public void weeklyEvaluation(@RequestBody WeeklyEvaluationRequest request) {
-        quantitativeEvaluationService.saveEvaluation(request);
+    public ResponseEntity<String> weeklyEvaluation(@RequestBody WeeklyEvaluationRequest request) {
+        String message = quantitativeEvaluationService.saveEvaluation(request);
+        URI location = URI.create("/weekly/");
+        return ResponseEntity.created(location).body(message);
     }
 
     @GetMapping("/{organizationId}")
