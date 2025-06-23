@@ -1,0 +1,67 @@
+package com.example.main_server.evaluation.common.entity;
+
+import com.example.main_server.common.entity.BaseEntity;
+import com.example.main_server.common.entity.User;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.ForeignKey;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.Digits;
+import jakarta.validation.constraints.NotNull;
+import java.math.BigDecimal;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Entity
+@Table(name = "user_quarter_scores")
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class UserQuarterScore extends BaseEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false,
+            foreignKey = @ForeignKey(name = "fk_user_final_scores_user"))
+    private User user;
+
+    @Digits(integer = 1, fraction = 2)
+    @Column(name = "peer_score", precision = 3, scale = 2)
+    private BigDecimal peerScore;
+
+    @Digits(integer = 1, fraction = 2)
+    @Column(name = "qualitative_score", precision = 3, scale = 2)
+    private BigDecimal qualitativeScore;
+
+    @Digits(integer = 1, fraction = 2)
+    @Column(name = "weekly_score", precision = 3, scale = 2)
+    private BigDecimal weeklyScore;
+
+    @NotNull
+    @Column(name = "evaluation_year")
+    private Integer evaluationYear;
+
+    @NotNull
+    @Column(name = "evaluation_quarter")
+    private Integer evaluationQuarter;
+
+    @Digits(integer = 1, fraction = 2)
+    @Column(name = "final_score", precision = 3, scale = 2)
+    private BigDecimal finalScore;
+
+    @Column(name = "user_rank")
+    private Integer userRank;
+}

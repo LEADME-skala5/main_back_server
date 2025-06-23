@@ -11,6 +11,7 @@ import com.example.main_server.common.repository.OrganizationRepository;
 import com.example.main_server.common.repository.UserRepository;
 import com.example.main_server.user.dto.UserRegisterRequest;
 import com.example.main_server.user.dto.UserResponse;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -82,4 +83,7 @@ public class UserService {
                 .orElseThrow(() -> new IllegalArgumentException("등록된 사번이 없습니다."));
     }
 
+    public List<User> getOrganizationMember(Long organizationId) {
+        return userRepository.findAllByOrganizationId(organizationId);
+    }
 }
