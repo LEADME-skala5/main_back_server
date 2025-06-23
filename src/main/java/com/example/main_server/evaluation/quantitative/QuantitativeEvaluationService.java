@@ -4,10 +4,10 @@ import com.example.main_server.common.entity.User;
 import com.example.main_server.common.repository.UserRepository;
 import com.example.main_server.evaluation.common.entity.Task;
 import com.example.main_server.evaluation.common.entity.TaskParticipation;
-import com.example.main_server.evaluation.common.entity.UserFinalScore;
+import com.example.main_server.evaluation.common.entity.UserQuarterScore;
 import com.example.main_server.evaluation.common.repository.TaskParticipationRepository;
 import com.example.main_server.evaluation.common.repository.TaskRepository;
-import com.example.main_server.evaluation.common.repository.UserFinalScoreRepository;
+import com.example.main_server.evaluation.common.repository.UserQuarterScoreRepository;
 import com.example.main_server.evaluation.quantitative.dto.QuarterOverviewResponse;
 import com.example.main_server.evaluation.quantitative.dto.TaskEvaluation;
 import com.example.main_server.evaluation.quantitative.dto.TaskResponse;
@@ -36,7 +36,7 @@ public class QuantitativeEvaluationService {
     private final UserRepository userRepository;
     private final TaskRepository taskRepository;
     private final TaskParticipationRepository taskParticipationRepository;
-    private final UserFinalScoreRepository userFinalScoreRepository;
+    private final UserQuarterScoreRepository userFinalScoreRepository;
 
     @Transactional
     public void saveEvaluation(WeeklyEvaluationRequest request) {
@@ -121,10 +121,10 @@ public class QuantitativeEvaluationService {
         }
 
         // 평가가 모두 이루어졌을 경우
-        List<UserFinalScore> scores = userFinalScoreRepository.findByOrgAndPeriod(orgId, year, quarter);
+        List<UserQuarterScore> scores = userFinalScoreRepository.findByOrgAndPeriod(orgId, year, quarter);
 
         List<UserOverview> dtos = scores.stream()
-                .sorted(Comparator.comparing(UserFinalScore::getFinalScore).reversed())
+                .sorted(Comparator.comparing(UserQuarterScore::getFinalScore).reversed())
                 .map(s -> {
                     User u = s.getUser();
                     // 직접 TaskParticipation 목록을 조회

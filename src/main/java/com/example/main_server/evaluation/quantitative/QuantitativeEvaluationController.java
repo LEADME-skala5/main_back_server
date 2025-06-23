@@ -15,8 +15,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/quantitative-evaluation")
 @RequiredArgsConstructor
 public class QuantitativeEvaluationController {
-    private static final int YEAR = 2021;
-    private static final int QUARTER = 2;
+    private static final int YEAR = 2024;
+    private static final int QUARTER = 1;
     private final QuantitativeEvaluationService quantitativeEvaluationService;
 
     @PostMapping("/weekly")
