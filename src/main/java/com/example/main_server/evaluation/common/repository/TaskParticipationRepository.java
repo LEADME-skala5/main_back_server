@@ -24,4 +24,27 @@ public interface TaskParticipationRepository extends JpaRepository<TaskParticipa
             "JOIN TaskParticipation tp2 ON tp1.task.id = tp2.task.id " +
             "WHERE tp1.user.id = :userId1 AND tp2.user.id = :userId2")
     List<Task> findCommonTasksByUserIds(@Param("userId1") Long userId1, @Param("userId2") Long userId2);
+
+    @Query("""
+                select tp.task
+                from TaskParticipation tp
+                where tp.user.id = :userId
+                  and (tp.endDate is null or tp.endDate >= current_date)
+            """)
+    List<Task> findCurrentTasks(Long userId);
+
+    @Query("""
+                select tp
+                from TaskParticipation tp
+                where tp.user.id = :userId
+                  and (tp.endDate is null or tp.endDate >= current_date)
+            """)
+    List<TaskParticipation> findCurrentTaskParticipations(Long userId);
+
+    @Query("""
+                select tp
+                from TaskParticipation tp
+                where tp.user.id = :userId and tp.task.id = :taskId
+            """)
+    TaskParticipation findByUserIdAndTaskId(Long userId, Long taskId);
 }

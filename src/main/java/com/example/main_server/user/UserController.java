@@ -6,9 +6,12 @@ import com.example.main_server.user.dto.LogInResponse;
 import com.example.main_server.user.dto.UserRegisterRequest;
 import com.example.main_server.user.dto.UserResponse;
 import jakarta.servlet.http.HttpSession;
+import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -48,5 +51,11 @@ public class UserController {
         }
     }
 
+    @GetMapping("/users/organization/{organizationId}")
+    public ResponseEntity<?> getTeamMembers(@PathVariable Long organizationId) {
+        List<User> members = userService.getOrganizationMember(organizationId);
+
+        return ResponseEntity.ok("");
+    }
 }
 

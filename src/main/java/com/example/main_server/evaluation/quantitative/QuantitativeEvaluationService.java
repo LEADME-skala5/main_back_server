@@ -3,14 +3,22 @@ package com.example.main_server.evaluation.quantitative;
 import com.example.main_server.common.entity.User;
 import com.example.main_server.common.repository.UserRepository;
 import com.example.main_server.evaluation.common.entity.Task;
+import com.example.main_server.evaluation.common.entity.TaskParticipation;
+import com.example.main_server.evaluation.common.entity.UserFinalScore;
+import com.example.main_server.evaluation.common.repository.TaskParticipationRepository;
 import com.example.main_server.evaluation.common.repository.TaskRepository;
+import com.example.main_server.evaluation.common.repository.UserFinalScoreRepository;
+import com.example.main_server.evaluation.quantitative.dto.QuarterOverviewResponse;
 import com.example.main_server.evaluation.quantitative.dto.TaskEvaluation;
+import com.example.main_server.evaluation.quantitative.dto.TaskResponse;
+import com.example.main_server.evaluation.quantitative.dto.UserOverview;
 import com.example.main_server.evaluation.quantitative.dto.WeeklyEvaluationRequest;
 import com.example.main_server.evaluation.quantitative.entity.WeeklyEvaluation;
 import com.example.main_server.evaluation.quantitative.repository.WeeklyEvaluationRepository;
 import com.example.main_server.util.exception.UserNotFoundException;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -27,6 +35,8 @@ public class QuantitativeEvaluationService {
     private final WeeklyEvaluationRepository weeklyEvaluationRepository;
     private final UserRepository userRepository;
     private final TaskRepository taskRepository;
+    private final TaskParticipationRepository taskParticipationRepository;
+    private final UserFinalScoreRepository userFinalScoreRepository;
 
     @Transactional
     public void saveEvaluation(WeeklyEvaluationRequest request) {
@@ -65,4 +75,89 @@ public class QuantitativeEvaluationService {
 
         weeklyEvaluationRepository.saveAll(evaluations);
     }
+
+    @Transactional
+    public QuarterOverviewResponse getEvaluations(Long orgId, int year, int quarter) {
+        // 해당 조직에 모든 유저가 평가 받았는지 확인
+        boolean hasUnevaluated = weeklyEvaluationRepository.existsUnEvaluatedUsers(orgId, year, quarter);
+
+        // 평가가 완료가 안되었을 경우
+        if (hasUnevaluated) {
+            List<User> members = userRepository.findByOrganizationId(orgId);
+
+            List<UserOverview> dtos = members.stream()
+                    .map(u -> {
+                        // 직접 TaskParticipation 목록을 조회
+                        List<TaskParticipation> participations = taskParticipationRepository.findCurrentTaskParticipations(
+                                u.getId());
+
+                        List<TaskResponse> taskResponses = participations.stream()
+                                .map(participation -> {
+                                    Task task = participation.getTask();
+                                    return new TaskResponse(
+                                            task.getId(),
+                                            task.getName(),
+                                            participation.getStartDate(),
+                                            participation.getEndDate(),
+                                            task.getWeight()
+                                    );
+                                })
+                                .toList();
+
+                        return new UserOverview(
+                                u.getId(),
+                                u.getName(),
+                                u.getJob().getName(),
+                                u.getPrimaryEmail(),
+                                taskResponses,
+                                null,       // score 미정
+                                null,       // rank 미정
+                                null        // lastUpdated 미정
+                        );
+                    })
+                    .toList();
+
+            return new QuarterOverviewResponse(false, dtos);
+        }
+
+        // 평가가 모두 이루어졌을 경우
+        List<UserFinalScore> scores = userFinalScoreRepository.findByOrgAndPeriod(orgId, year, quarter);
+
+        List<UserOverview> dtos = scores.stream()
+                .sorted(Comparator.comparing(UserFinalScore::getFinalScore).reversed())
+                .map(s -> {
+                    User u = s.getUser();
+                    // 직접 TaskParticipation 목록을 조회
+                    List<TaskParticipation> participations = taskParticipationRepository.findCurrentTaskParticipations(
+                            u.getId());
+
+                    List<TaskResponse> taskResponses = participations.stream()
+                            .map(participation -> {
+                                Task task = participation.getTask();
+                                return new TaskResponse(
+                                        task.getId(),
+                                        task.getName(),
+                                        participation.getStartDate(),
+                                        participation.getEndDate(),
+                                        task.getWeight()
+                                );
+                            })
+                            .toList();
+
+                    return new UserOverview(
+                            u.getId(),
+                            u.getName(),
+                            u.getJob().getName(),
+                            u.getPrimaryEmail(),
+                            taskResponses,
+                            s.getFinalScore(),
+                            s.getUserRank(),
+                            s.getUpdatedAt().toLocalDate()
+                    );
+                })
+                .toList();
+
+        return new QuarterOverviewResponse(true, dtos);
+    }
+
 }
