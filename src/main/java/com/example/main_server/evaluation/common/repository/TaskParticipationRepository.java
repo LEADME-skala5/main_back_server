@@ -33,11 +33,11 @@ public interface TaskParticipationRepository extends JpaRepository<TaskParticipa
             """)
     List<Task> findCurrentTasks(Long userId);
 
+    // TODO: 조건문 수정 해야될수도
     @Query("""
                 select tp
                 from TaskParticipation tp
                 where tp.user.id = :userId
-                  and (tp.endDate is null or tp.endDate >= current_date)
             """)
     List<TaskParticipation> findCurrentTaskParticipations(Long userId);
 
