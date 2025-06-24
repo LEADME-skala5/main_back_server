@@ -5,6 +5,7 @@ import com.example.main_server.evaluation.quantitative.dto.WeeklyEvaluationReque
 import java.net.URI;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,6 +22,7 @@ public class QuantitativeEvaluationController {
     private final QuantitativeEvaluationService quantitativeEvaluationService;
 
     @PostMapping("/weekly")
+    @PreAuthorize("hasRole('ROLE_MANAGER')")
     public ResponseEntity<String> weeklyEvaluation(@RequestBody WeeklyEvaluationRequest request) {
         String message = quantitativeEvaluationService.saveEvaluation(request);
         URI location = URI.create("/weekly/");
@@ -28,6 +30,7 @@ public class QuantitativeEvaluationController {
     }
 
     @GetMapping("/{organizationId}")
+    @PreAuthorize("hasRole('ROLE_MANAGER')")
     public ResponseEntity<QuarterOverviewResponse> getEvaluations(@PathVariable Long organizationId) {
         QuarterOverviewResponse res = quantitativeEvaluationService.getEvaluations(organizationId, YEAR, QUARTER);
         return ResponseEntity.ok(res);
