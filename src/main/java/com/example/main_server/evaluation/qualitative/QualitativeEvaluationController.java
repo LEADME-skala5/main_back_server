@@ -27,7 +27,7 @@ public class QualitativeEvaluationController {
     }
 
     @PostMapping("")
-    @PreAuthorize("hasRole('ROLE_MANAGER')")
+    @PreAuthorize("hasRole('ROLE_ORGANIZATION_LEADER')")
     public ResponseEntity<String> saveEvaluationCriteria(
             @RequestBody QualitativeEvaluationKeywordsRequest body) {
         qualitativeEvaluationService.saveKeywords(body.organizationId(), body.keywords());

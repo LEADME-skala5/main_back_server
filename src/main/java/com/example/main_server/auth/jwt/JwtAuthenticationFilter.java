@@ -52,7 +52,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     return;
                 }
 
-                String role = user.getIsManager() ? "ROLE_MANAGER" : "ROLE_USER";
+                String role = user.getIsManager() ? "ROLE_ORGANIZATION_LEADER" : "ROLE_USER";
                 SimpleGrantedAuthority authority = new SimpleGrantedAuthority(role);
 
                 // 인증 객체 생성 및 SecurityContext에 설정
