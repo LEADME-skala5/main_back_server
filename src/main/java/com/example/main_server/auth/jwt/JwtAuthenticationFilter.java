@@ -7,9 +7,11 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Collections;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
@@ -45,13 +47,26 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 Long userId = jwtTokenProvider.getUserIdFromToken(accessToken);
                 User user = userRepository.findById(userId).orElse(null);
 
-                if (user != null) {
-                    // 인증 객체 생성 및 SecurityContext에 설정
-                    UsernamePasswordAuthenticationToken authentication =
-                            new UsernamePasswordAuthenticationToken(user, null, null);
-                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                if (user == null) {
+                    log.warn("사용자를 찾을 수 없습니다: userId={}", userId);
+                    return;
                 }
+
+                String role = user.getIsManager() ? "ROLE_MANAGER" : "ROLE_USER";
+                SimpleGrantedAuthority authority = new SimpleGrantedAuthority(role);
+
+                // 인증 객체 생성 및 SecurityContext에 설정
+                UsernamePasswordAuthenticationToken authentication =
+                        new UsernamePasswordAuthenticationToken(
+                                user,
+                                null,
+                                Collections.singletonList(authority)
+                        );
+
+                log.debug("사용자 '{}' 인증 완료, 권한: {}", user.getName(), role);
+
+                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         } catch (Exception e) {
             log.error("JWT 인증 처리 중 오류 발생", e);
