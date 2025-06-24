@@ -47,4 +47,7 @@ public interface TaskParticipationRepository extends JpaRepository<TaskParticipa
                 where tp.user.id = :userId and tp.task.id = :taskId
             """)
     TaskParticipation findByUserIdAndTaskId(Long userId, Long taskId);
+
+    @Query("SELECT tp FROM TaskParticipation tp JOIN FETCH tp.task WHERE tp.user.id IN :userIds")
+    List<TaskParticipation> findCurrentTaskParticipationsByUserIds(@Param("userIds") List<Long> userIds);
 }

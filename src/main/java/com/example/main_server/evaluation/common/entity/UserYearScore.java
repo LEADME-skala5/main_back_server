@@ -22,13 +22,13 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "user_quarter_scores")
+@Table(name = "user_year_scores")
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserQuarterScore extends BaseEntity {
+public class UserYearScore extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -38,25 +38,9 @@ public class UserQuarterScore extends BaseEntity {
             foreignKey = @ForeignKey(name = "fk_user_final_scores_user"))
     private User user;
 
-    @Digits(integer = 1, fraction = 2)
-    @Column(name = "peer_score", precision = 3, scale = 2)
-    private BigDecimal peerScore;
-
-    @Digits(integer = 1, fraction = 2)
-    @Column(name = "qualitative_score", precision = 3, scale = 2)
-    private BigDecimal qualitativeScore;
-
-    @Digits(integer = 1, fraction = 2)
-    @Column(name = "weekly_score", precision = 3, scale = 2)
-    private BigDecimal weeklyScore;
-
     @NotNull
     @Column(name = "evaluation_year")
     private Integer evaluationYear;
-
-    @NotNull
-    @Column(name = "evaluation_quarter")
-    private Integer evaluationQuarter;
 
     @Digits(integer = 1, fraction = 2)
     @Column(name = "final_score", precision = 3, scale = 2)
