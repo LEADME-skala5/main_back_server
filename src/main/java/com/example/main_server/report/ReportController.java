@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -12,10 +13,14 @@ import org.springframework.web.bind.annotation.RestController;
 public class ReportController {
     private final ReportService reportService;
 
-    @GetMapping("/{documentId}")
-    public void getReport(@PathVariable String documentId) {
-        reportService.getReport(documentId);
+    @GetMapping
+    public void getReports(@RequestParam Long userId) {
+        reportService.getReports(userId);
     }
 
+    @GetMapping("/{documentId}")
+    public void getReport(@PathVariable Long documentId) {
+        reportService.getReport(documentId);
+    }
 
 }
