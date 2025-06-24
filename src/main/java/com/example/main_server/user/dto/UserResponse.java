@@ -12,7 +12,6 @@ public record UserResponse(
         Long organizationId,
         Boolean isManager,
         CareerLevel careerLevel
-
 ) {
     public UserResponse(User user) {
         this(
