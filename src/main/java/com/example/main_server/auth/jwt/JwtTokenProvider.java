@@ -84,6 +84,16 @@ public class JwtTokenProvider {
         response.addCookie(cookie);
     }
 
+    // 쿠키에 액세스 토큰 설정
+    public void setAccessTokenCookie(HttpServletResponse response, String accessToken) {
+        Cookie cookie = new Cookie(ACCESS_TOKEN, accessToken);
+        cookie.setHttpOnly(true);  // JavaScript에서 접근 불가
+        cookie.setSecure(true);   // HTTPS에서만 전송 (운영 환경)
+        cookie.setPath("/");      // 모든 경로에서 접근 가능
+        cookie.setMaxAge((int) (accessExpiration / 1000));  // 초 단위로 변환
+        response.addCookie(cookie);
+    }
+
     // 쿠키에서 리프레시 토큰 추출
     public String getRefreshTokenFromCookie(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
@@ -97,8 +107,28 @@ public class JwtTokenProvider {
         return null;
     }
 
-    // 요청 헤더에서 액세스 토큰 추출
-    public String getAccessTokenFromHeader(HttpServletRequest request) {
+    // 쿠키에서 액세스 토큰 추출
+    public String getAccessTokenFromCookie(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (ACCESS_TOKEN.equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
+        }
+        return null;
+    }
+
+    // 요청에서 액세스 토큰 추출 (쿠키 우선, 없으면 헤더 확인)
+    public String getAccessTokenFromRequest(HttpServletRequest request) {
+        // 먼저 쿠키에서 확인
+        String tokenFromCookie = getAccessTokenFromCookie(request);
+        if (tokenFromCookie != null) {
+            return tokenFromCookie;
+        }
+
+        // 쿠키에 없으면 헤더에서 확인
         String bearerToken = request.getHeader("Authorization");
         if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
             return bearerToken.substring(7);
@@ -171,6 +201,16 @@ public class JwtTokenProvider {
     // 로그아웃 시 쿠키 삭제
     public void clearRefreshTokenCookie(HttpServletResponse response) {
         Cookie cookie = new Cookie(REFRESH_TOKEN, "");
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(0);  // 즉시 삭제
+        response.addCookie(cookie);
+    }
+
+    // 액세스 토큰 쿠키 삭제
+    public void clearAccessTokenCookie(HttpServletResponse response) {
+        Cookie cookie = new Cookie(ACCESS_TOKEN, "");
         cookie.setHttpOnly(true);
         cookie.setSecure(true);
         cookie.setPath("/");

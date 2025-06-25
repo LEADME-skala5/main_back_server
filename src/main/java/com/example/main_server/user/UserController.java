@@ -58,8 +58,11 @@ public class UserController {
 
             // 리프레시 토큰을 쿠키에 설정
             jwtTokenProvider.setRefreshTokenCookie(response, refreshToken);
-            
-            return ResponseEntity.ok(new LogInResponse(user, accessToken));
+
+            // 액세스 토큰을 쿠키에 설정
+            jwtTokenProvider.setAccessTokenCookie(response, accessToken);
+
+            return ResponseEntity.ok(new LogInResponse(user));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(401).body(
                     Map.of("errorCode", "LOGIN_FAILED", "message", e.getMessage())
@@ -106,7 +109,10 @@ public class UserController {
             // 쿠키 업데이트
             jwtTokenProvider.setRefreshTokenCookie(response, newRefreshToken);
 
-            return ResponseEntity.ok(new LogInResponse(user, newAccessToken));
+            // 액세스 토큰을 쿠키에 설정
+            jwtTokenProvider.setAccessTokenCookie(response, newAccessToken);
+
+            return ResponseEntity.ok(new LogInResponse(user));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("errorCode", "TOKEN_REFRESH_FAILED", "message", "토큰 갱신 중 오류가 발생했습니다."));
@@ -117,7 +123,7 @@ public class UserController {
     public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
         try {
             // 액세스 토큰에서 사용자 ID 추출
-            String accessToken = jwtTokenProvider.getAccessTokenFromHeader(request);
+            String accessToken = jwtTokenProvider.getAccessTokenFromRequest(request);
             if (accessToken != null && jwtTokenProvider.validateToken(accessToken)) {
                 Long userId = jwtTokenProvider.getUserIdFromToken(accessToken);
 
@@ -125,8 +131,9 @@ public class UserController {
                 jwtRedisService.deleteRefreshToken(userId);
             }
 
-            // 쿠키에서 리프레시 토큰 삭제
+            // 쿠키에서 토큰 삭제
             jwtTokenProvider.clearRefreshTokenCookie(response);
+            jwtTokenProvider.clearAccessTokenCookie(response);
 
             return ResponseEntity.ok(Map.of("message", "로그아웃 되었습니다."));
         } catch (Exception e) {

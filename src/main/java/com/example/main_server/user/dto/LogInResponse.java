@@ -11,10 +11,9 @@ public record LogInResponse(
         Long divisionId,
         Long organizationId,
         Boolean isManager,
-        CareerLevel careerLevel,
-        String accessToken
+        CareerLevel careerLevel
 ) {
-    public LogInResponse(User user, String accessToken) {
+    public LogInResponse(User user) {
         this(
                 user.getId(),
                 user.getName(),
@@ -23,8 +22,7 @@ public record LogInResponse(
                 user.getDivision() != null ? user.getDivision().getId() : null,
                 user.getOrganization() != null ? user.getOrganization().getId() : null,
                 user.getIsManager(),
-                user.getCareerLevel(),
-                accessToken
+                user.getCareerLevel()
         );
     }
 }
