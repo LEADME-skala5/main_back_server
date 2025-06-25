@@ -55,6 +55,15 @@ public class JwtTokenProvider {
         claims.put("id", user.getId());
         claims.put("employeeNumber", user.getEmployeeNumber());
         claims.put("name", user.getName());
+        if (user.getOrganization() != null) {
+            claims.put("organizationId", user.getOrganization().getId());
+        }
+        if (user.getDivision() != null) {
+            claims.put("divisionId", user.getDivision().getId());
+        }
+        if (user.getDepartment() != null) {
+            claims.put("departmentId", user.getDepartment().getId());
+        }
 
         return Jwts.builder()
                 .setClaims(claims)
