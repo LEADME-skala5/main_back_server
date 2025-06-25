@@ -15,4 +15,12 @@ public abstract class BaseReport {
     private String title;
     private String startDate;
     private String endDate;
+
+    private User user;
+
+    public static class User {
+        private Long userId;
+        private String name;
+        private String department;
+    }
 }

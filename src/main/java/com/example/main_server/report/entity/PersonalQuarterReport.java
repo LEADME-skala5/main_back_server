@@ -8,7 +8,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document(collection = "reports")
 public class PersonalQuarterReport extends BaseReport {
 
-    private User user;
 
     private Double finalScore;
     private String compareText;
@@ -24,12 +23,6 @@ public class PersonalQuarterReport extends BaseReport {
     private List<String> workAttitude;
 
     private String finalComment;
-
-    public static class User {
-        private Long userId;
-        private String name;
-        private String department;
-    }
 
     public static class TeamGoal {
         private String goalName;
