@@ -77,7 +77,7 @@ public class JwtTokenProvider {
     // 쿠키에 리프레시 토큰 설정
     public void setRefreshTokenCookie(HttpServletResponse response, String refreshToken) {
         response.setHeader("Set-Cookie", String.format(
-                "%s=%s; Path=/; Domain=skala25a.project.skala-ai.com; Secure; HttpOnly; Max-Age=%d; SameSite=Lax",
+                "%s=%s; Path=/; Domain=skore.skala25a.project.skala-ai.com; Secure; HttpOnly; Max-Age=%d; SameSite=Lax",
                 REFRESH_TOKEN, refreshToken, (int) (refreshExpiration / 1000)
         ));
 
@@ -87,7 +87,7 @@ public class JwtTokenProvider {
     // 쿠키에 액세스 토큰 설정
     public void setAccessTokenCookie(HttpServletResponse response, String accessToken) {
         response.setHeader("Set-Cookie", String.format(
-                "%s=%s; Path=/; Domain=skala25a.project.skala-ai.com; Secure; Max-Age=%d; SameSite=Lax",
+                "%s=%s; Path=/; Domain=skore.skala25a.project.skala-ai.com; Secure; Max-Age=%d; SameSite=Lax",
                 ACCESS_TOKEN, accessToken, (int) (accessExpiration / 1000)
         ));
 
@@ -200,14 +200,14 @@ public class JwtTokenProvider {
     // 로그아웃 시 쿠키 삭제
     public void clearAccessTokenCookie(HttpServletResponse response) {
         response.setHeader("Set-Cookie", String.format(
-                "%s=; Path=/; Domain=skala25a.project.skala-ai.com; Secure; Max-Age=0; SameSite=Lax",
+                "%s=; Path=/; Domain=skore.skala25a.project.skala-ai.com; Secure; Max-Age=0; SameSite=Lax",
                 ACCESS_TOKEN
         ));
     }
 
     public void clearRefreshTokenCookie(HttpServletResponse response) {
         response.setHeader("Set-Cookie", String.format(
-                "%s=; Path=/; Domain=skala25a.project.skala-ai.com; Secure; HttpOnly; Max-Age=0; SameSite=Lax",
+                "%s=; Path=/; Domain=skore.skala25a.project.skala-ai.com; Secure; HttpOnly; Max-Age=0; SameSite=Lax",
                 REFRESH_TOKEN
         ));
     }
