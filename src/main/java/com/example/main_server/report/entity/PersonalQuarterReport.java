@@ -1,24 +1,12 @@
 package com.example.main_server.report.entity;
 
-import jakarta.persistence.Id;
 import java.util.List;
-import lombok.Data;
+import lombok.Getter;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Data
-@Document(collection = "personal_quarter_reports")
-public class PersonalQuarterReport {
-    @Id
-    private String id;
-
-    private String type;
-    private Integer evaluatedYear;
-    private Integer evaluatedQuarter;
-
-    private String createdAt;
-    private String title;
-    private String startDate;
-    private String endDate;
+@Getter
+@Document(collection = "reports")
+public class PersonalQuarterReport extends BaseReport {
 
     private User user;
 

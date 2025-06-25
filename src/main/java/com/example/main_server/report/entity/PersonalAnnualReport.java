@@ -1,9 +1,9 @@
 package com.example.main_server.report.entity;
 
-import lombok.Data;
+import lombok.Getter;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Data
-@Document(collection = "personal_annual_reports")
-public class PersonalAnnualReport {
+@Getter
+@Document(collection = "reports")
+public class PersonalAnnualReport extends BaseReport {
 }
