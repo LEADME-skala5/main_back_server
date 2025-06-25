@@ -87,7 +87,7 @@ public class JwtTokenProvider {
     // 쿠키에 액세스 토큰 설정
     public void setAccessTokenCookie(HttpServletResponse response, String accessToken) {
         Cookie cookie = new Cookie(ACCESS_TOKEN, accessToken);
-        cookie.setHttpOnly(true);  // JavaScript에서 접근 불가
+        cookie.setHttpOnly(false);  // TODO: 나중에 true로 고쳐야함
         cookie.setSecure(true);   // HTTPS에서만 전송 (운영 환경)
         cookie.setPath("/");      // 모든 경로에서 접근 가능
         cookie.setMaxAge((int) (accessExpiration / 1000));  // 초 단위로 변환
