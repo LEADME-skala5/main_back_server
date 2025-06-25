@@ -38,8 +38,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         try {
-            // 요청에서 액세스 토큰 추출
-            String accessToken = jwtTokenProvider.getAccessTokenFromHeader(request);
+            // 요청에서 액세스 토큰 추출 (쿠키 우선, 없으면 헤더)
+            String accessToken = jwtTokenProvider.getAccessTokenFromRequest(request);
 
             // 토큰 유효성 검사
             if (accessToken != null && jwtTokenProvider.validateToken(accessToken)) {
@@ -52,7 +52,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     return;
                 }
 
-                String role = user.getIsManager() ? "ROLE_MANAGER" : "ROLE_USER";
+                String role = user.getIsManager() ? "ROLE_ORGANIZATION_LEADER" : "ROLE_USER";
                 SimpleGrantedAuthority authority = new SimpleGrantedAuthority(role);
 
                 // 인증 객체 생성 및 SecurityContext에 설정

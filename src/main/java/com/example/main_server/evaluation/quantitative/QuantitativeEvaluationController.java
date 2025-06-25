@@ -22,7 +22,7 @@ public class QuantitativeEvaluationController {
     private final QuantitativeEvaluationService quantitativeEvaluationService;
 
     @PostMapping("/weekly")
-    @PreAuthorize("hasRole('ROLE_MANAGER')")
+    @PreAuthorize("hasRole('ROLE_ORGANIZATION_LEADER')")
     public ResponseEntity<String> weeklyEvaluation(@RequestBody WeeklyEvaluationRequest request) {
         String message = quantitativeEvaluationService.saveEvaluation(request);
         URI location = URI.create("/weekly/");
@@ -30,7 +30,7 @@ public class QuantitativeEvaluationController {
     }
 
     @GetMapping("/{organizationId}")
-    @PreAuthorize("hasRole('ROLE_MANAGER')")
+    @PreAuthorize("hasRole('ROLE_ORGANIZATION_LEADER')")
     public ResponseEntity<QuarterOverviewResponse> getEvaluations(@PathVariable Long organizationId) {
         QuarterOverviewResponse res = quantitativeEvaluationService.getEvaluations(organizationId, YEAR, QUARTER);
         return ResponseEntity.ok(res);
