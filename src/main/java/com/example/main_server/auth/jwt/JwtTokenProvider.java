@@ -78,7 +78,7 @@ public class JwtTokenProvider {
     public void setRefreshTokenCookie(HttpServletResponse response, String refreshToken) {
         Cookie cookie = new Cookie(REFRESH_TOKEN, refreshToken);
         cookie.setHttpOnly(true);  // JavaScript에서 접근 불가
-        cookie.setSecure(false);   // TODO: 나중에 true로 고쳐야함
+        cookie.setSecure(true);
         cookie.setPath("/");      // 모든 경로에서 접근 가능
         cookie.setMaxAge((int) (refreshExpiration / 1000));  // 초 단위로 변환
         response.addCookie(cookie);
@@ -88,7 +88,7 @@ public class JwtTokenProvider {
     public void setAccessTokenCookie(HttpServletResponse response, String accessToken) {
         Cookie cookie = new Cookie(ACCESS_TOKEN, accessToken);
         cookie.setHttpOnly(false);  // TODO: 나중에 true로 고쳐야함
-        cookie.setSecure(false);   // TODO: 나중에 true로 고쳐야함
+        cookie.setSecure(true);
         cookie.setPath("/");      // 모든 경로에서 접근 가능
         cookie.setMaxAge((int) (accessExpiration / 1000));  // 초 단위로 변환
         response.addCookie(cookie);
