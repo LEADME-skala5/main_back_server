@@ -76,22 +76,21 @@ public class JwtTokenProvider {
 
     // 쿠키에 리프레시 토큰 설정
     public void setRefreshTokenCookie(HttpServletResponse response, String refreshToken) {
-        Cookie cookie = new Cookie(REFRESH_TOKEN, refreshToken);
-        cookie.setHttpOnly(true);  // JavaScript에서 접근 불가
-        cookie.setSecure(true);
-        cookie.setPath("/");      // 모든 경로에서 접근 가능
-        cookie.setMaxAge((int) (refreshExpiration / 1000));  // 초 단위로 변환
-        response.addCookie(cookie);
+        response.setHeader("Set-Cookie", String.format(
+                "%s=%s; Path=/; Domain=skala25a.project.skala-ai.com; Secure; HttpOnly; Max-Age=%d; SameSite=Lax",
+                REFRESH_TOKEN, refreshToken, (int) (refreshExpiration / 1000)
+        ));
+
     }
+
 
     // 쿠키에 액세스 토큰 설정
     public void setAccessTokenCookie(HttpServletResponse response, String accessToken) {
-        Cookie cookie = new Cookie(ACCESS_TOKEN, accessToken);
-        cookie.setHttpOnly(false);  // TODO: 나중에 true로 고쳐야함
-        cookie.setSecure(true);
-        cookie.setPath("/");      // 모든 경로에서 접근 가능
-        cookie.setMaxAge((int) (accessExpiration / 1000));  // 초 단위로 변환
-        response.addCookie(cookie);
+        response.setHeader("Set-Cookie", String.format(
+                "%s=%s; Path=/; Domain=skala25a.project.skala-ai.com; Secure; Max-Age=%d; SameSite=Lax",
+                ACCESS_TOKEN, accessToken, (int) (accessExpiration / 1000)
+        ));
+
     }
 
     // 쿠키에서 리프레시 토큰 추출
@@ -199,22 +198,18 @@ public class JwtTokenProvider {
     }
 
     // 로그아웃 시 쿠키 삭제
-    public void clearRefreshTokenCookie(HttpServletResponse response) {
-        Cookie cookie = new Cookie(REFRESH_TOKEN, "");
-        cookie.setHttpOnly(true);
-        cookie.setSecure(true);
-        cookie.setPath("/");
-        cookie.setMaxAge(0);  // 즉시 삭제
-        response.addCookie(cookie);
+    public void clearAccessTokenCookie(HttpServletResponse response) {
+        response.setHeader("Set-Cookie", String.format(
+                "%s=; Path=/; Domain=skala25a.project.skala-ai.com; Secure; Max-Age=0; SameSite=Lax",
+                ACCESS_TOKEN
+        ));
     }
 
-    // 액세스 토큰 쿠키 삭제
-    public void clearAccessTokenCookie(HttpServletResponse response) {
-        Cookie cookie = new Cookie(ACCESS_TOKEN, "");
-        cookie.setHttpOnly(true);
-        cookie.setSecure(true);
-        cookie.setPath("/");
-        cookie.setMaxAge(0);  // 즉시 삭제
-        response.addCookie(cookie);
+    public void clearRefreshTokenCookie(HttpServletResponse response) {
+        response.setHeader("Set-Cookie", String.format(
+                "%s=; Path=/; Domain=skala25a.project.skala-ai.com; Secure; HttpOnly; Max-Age=0; SameSite=Lax",
+                REFRESH_TOKEN
+        ));
     }
+
 }
