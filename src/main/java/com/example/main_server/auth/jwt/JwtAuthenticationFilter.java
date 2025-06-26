@@ -31,7 +31,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // 인증이 필요없는 경로는 처리하지 않음
         String path = request.getRequestURI();
-        if (path.startsWith("/api/v1/login") || path.startsWith("/api/v1/register") ||
+        if (path.startsWith("/api/v1/auth/login") || path.startsWith("/api/v1/register") ||
                 path.startsWith("/api/v1/auth/refresh")) {
             filterChain.doFilter(request, response);
             return;
