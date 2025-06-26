@@ -1,8 +1,10 @@
 package com.example.main_server.report.entity;
 
 import jakarta.persistence.Id;
+import lombok.Getter;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+@Getter
 @Document(collection = "reports")
 public abstract class BaseReport {
     @Id
@@ -18,6 +20,7 @@ public abstract class BaseReport {
 
     private User user;
 
+    @Getter
     public static class User {
         private Long userId;
         private String name;
