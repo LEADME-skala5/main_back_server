@@ -44,8 +44,9 @@ public class ReportService {
         });
     }
 
-    public void getReport(Long documentId) {
+    public void getReport(String documentId) {
         // TODO: 리포트 상세 조회
+        baseRepostRepository.findById(documentId);
     }
 
     public ReportsResponse getReportsForLeader(Long userId, Long organizationId) {

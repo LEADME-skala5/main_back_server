@@ -35,7 +35,7 @@ public class ReportController {
     }
 
     @GetMapping("reports/{documentId}")
-    public void getReport(@PathVariable Long documentId) {
+    public void getReport(@PathVariable String documentId) {
         reportService.getReport(documentId);
     }
 }
