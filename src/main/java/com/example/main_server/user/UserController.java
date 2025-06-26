@@ -41,7 +41,7 @@ public class UserController {
         }
     }
 
-    @PostMapping("/login")
+    @PostMapping("/auth/login")
     public ResponseEntity<?> login(@RequestBody LogInRequest request, HttpServletResponse response) {
         try {
             // 사용자 인증
