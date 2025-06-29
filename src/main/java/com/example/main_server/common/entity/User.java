@@ -88,4 +88,11 @@ public class User extends BaseEntity {
         Division division = getDivision();
         return division != null ? division.getDepartment() : null;
     }
+
+    @Override
+    public String toString() {
+        return "User{id=" + id +
+                ", name='" + name + '\'' +
+                '}';
+    }
 }

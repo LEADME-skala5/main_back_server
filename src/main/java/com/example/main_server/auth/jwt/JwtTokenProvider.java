@@ -203,7 +203,6 @@ public class JwtTokenProvider {
         StringBuilder cookieBuilder = new StringBuilder();
 
         // 공통 설정
-        cookieBuilder.append(String.format("; Max-Age=%d", (int) (maxAge / 1000)));
         cookieBuilder.append(String.format("%s=%s; Path=/", name, value));
         cookieBuilder.append("; Secure");
         cookieBuilder.append("; SameSite=None");
@@ -212,6 +211,8 @@ public class JwtTokenProvider {
         if (PROD_ORIGIN.equals(origin)) {
             cookieBuilder.append(String.format("; Domain=%s", PROD_DOMAIN));
         }
+        
+        cookieBuilder.append(String.format("; Max-Age=%d", (int) (maxAge / 1000)));
 
         return cookieBuilder.toString();
     }
