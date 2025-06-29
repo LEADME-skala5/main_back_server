@@ -42,10 +42,11 @@ public class UserController {
     }
 
     @PostMapping("/auth/login")
-    public ResponseEntity<?> login(@RequestBody LogInRequest request, HttpServletResponse response) {
+    public ResponseEntity<?> login(@RequestBody LogInRequest logInRequest, HttpServletRequest request,
+                                   HttpServletResponse response) {
         try {
             // 사용자 인증
-            User user = userService.login(request.employeeNumber(), request.password());
+            User user = userService.login(logInRequest.employeeNumber(), logInRequest.password());
 
             // 액세스 토큰 생성
             String accessToken = jwtTokenProvider.createAccessToken(user);
@@ -57,10 +58,10 @@ public class UserController {
             jwtRedisService.saveRefreshToken(user.getId(), refreshToken, jwtTokenProvider.getRefreshExpiration());
 
             // 리프레시 토큰을 쿠키에 설정
-            jwtTokenProvider.setRefreshTokenCookie(response, refreshToken);
+            jwtTokenProvider.setRefreshTokenCookie(request, response, refreshToken);
 
             // 액세스 토큰을 쿠키에 설정
-            jwtTokenProvider.setAccessTokenCookie(response, accessToken);
+            jwtTokenProvider.setAccessTokenCookie(request, response, accessToken);
 
             return ResponseEntity.ok(new LogInResponse(user));
         } catch (IllegalArgumentException e) {
@@ -106,11 +107,11 @@ public class UserController {
             // Redis 업데이트
             jwtRedisService.saveRefreshToken(userId, newRefreshToken, jwtTokenProvider.getRefreshExpiration());
 
-            // 쿠키 업데이트
-            jwtTokenProvider.setRefreshTokenCookie(response, newRefreshToken);
+            // 쿠키 업데이트 (request를 전달하여 오리진 인식)
+            jwtTokenProvider.setRefreshTokenCookie(request, response, newRefreshToken);
 
-            // 액세스 토큰을 쿠키에 설정
-            jwtTokenProvider.setAccessTokenCookie(response, newAccessToken);
+            // 액세스 토큰을 쿠키에 설정 (request를 전달하여 오리진 인식)
+            jwtTokenProvider.setAccessTokenCookie(request, response, newAccessToken);
 
             return ResponseEntity.ok(new LogInResponse(user));
         } catch (Exception e) {
@@ -131,9 +132,9 @@ public class UserController {
                 jwtRedisService.deleteRefreshToken(userId);
             }
 
-            // 쿠키에서 토큰 삭제
-            jwtTokenProvider.clearRefreshTokenCookie(response);
-            jwtTokenProvider.clearAccessTokenCookie(response);
+            // 쿠키에서 토큰 삭제 (request를 전달하여 오리진 인식)
+            jwtTokenProvider.clearRefreshTokenCookie(request, response);
+            jwtTokenProvider.clearAccessTokenCookie(request, response);
 
             return ResponseEntity.ok(Map.of("message", "로그아웃 되었습니다."));
         } catch (Exception e) {

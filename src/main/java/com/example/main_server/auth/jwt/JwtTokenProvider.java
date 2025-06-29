@@ -26,6 +26,9 @@ import org.springframework.stereotype.Component;
 public class JwtTokenProvider {
     private static final String ACCESS_TOKEN = "accessToken";
     private static final String REFRESH_TOKEN = "refreshToken";
+    private static final String LOCAL_ORIGIN = "http://localhost:3000";
+    private static final String PROD_ORIGIN = "https://skore.skala25a.project.skala-ai.com";
+    private static final String PROD_DOMAIN = ".skala25a.project.skala-ai.com";
     @Value("${jwt.secret}")
     private String secret;
     @Value("${jwt.access-expiration}")
@@ -75,29 +78,14 @@ public class JwtTokenProvider {
     }
 
     // 쿠키에 리프레시 토큰 설정
-    public void setRefreshTokenCookie(HttpServletResponse response, String refreshToken) {
-        //        response.setHeader("Set-Cookie", String.format(
-        //                "%s=%s; Path=/; Domain=skore.skala25a.project.skala-ai.com; Secure; HttpOnly; Max-Age=%d; SameSite=None",
-        //                REFRESH_TOKEN, refreshToken, (int) (refreshExpiration / 1000)
-        //        ));
-        response.setHeader("Set-Cookie", String.format(
-                "%s=%s; Path=/; Max-Age=%d; SameSite=Lax",
-                REFRESH_TOKEN, refreshToken, (int) (refreshExpiration / 1000)
-        ));
+    public void setRefreshTokenCookie(HttpServletRequest request, HttpServletResponse response, String refreshToken) {
+        response.addHeader("Set-Cookie", createCookieHeader(REFRESH_TOKEN, refreshToken, refreshExpiration, request));
     }
 
 
     // 쿠키에 액세스 토큰 설정
-    public void setAccessTokenCookie(HttpServletResponse response, String accessToken) {
-//        response.setHeader("Set-Cookie", String.format(
-//                "%s=%s; Path=/; Domain=skore.skala25a.project.skala-ai.com; Secure; Max-Age=%d; SameSite=None",
-//                ACCESS_TOKEN, accessToken, (int) (accessExpiration / 1000)
-//        ));
-        response.setHeader("Set-Cookie", String.format(
-                "%s=%s; Path=/; Max-Age=%d; SameSite=Lax",
-                ACCESS_TOKEN, accessToken, (int) (accessExpiration / 1000)
-        ));
-
+    public void setAccessTokenCookie(HttpServletRequest request, HttpServletResponse response, String accessToken) {
+        response.addHeader("Set-Cookie", createCookieHeader(ACCESS_TOKEN, accessToken, accessExpiration, request));
     }
 
     // 쿠키에서 리프레시 토큰 추출
@@ -209,19 +197,55 @@ public class JwtTokenProvider {
         return refreshExpiration;
     }
 
+    // 오리진 기반 쿠키 설정 헤더 생성
+    private String createCookieHeader(String name, String value, long maxAge, HttpServletRequest request) {
+        String origin = request.getHeader("Origin");
+        StringBuilder cookieBuilder = new StringBuilder();
+
+        // 공통 설정
+        cookieBuilder.append(String.format("; Max-Age=%d", (int) (maxAge / 1000)));
+        cookieBuilder.append(String.format("%s=%s; Path=/", name, value));
+        cookieBuilder.append("; Secure");
+        cookieBuilder.append("; SameSite=None");
+
+        // 배포 환경에 따른 쿠키 설정
+        if (PROD_ORIGIN.equals(origin)) {
+            cookieBuilder.append(String.format("; Domain=%s", PROD_DOMAIN));
+        }
+
+        return cookieBuilder.toString();
+    }
+
     // 로그아웃 시 쿠키 삭제
-    public void clearAccessTokenCookie(HttpServletResponse response) {
-        response.setHeader("Set-Cookie", String.format(
-                "%s=; Path=/; Domain=skore.skala25a.project.skala-ai.com; Secure; Max-Age=0; SameSite=Lax",
-                ACCESS_TOKEN
-        ));
+    public void clearAccessTokenCookie(HttpServletRequest request, HttpServletResponse response) {
+        String origin = request.getHeader("Origin");
+        StringBuilder cookieBuilder = new StringBuilder();
+
+        cookieBuilder.append(String.format("%s=; Path=/; Max-Age=0", ACCESS_TOKEN));
+
+        if (PROD_ORIGIN.equals(origin)) {
+            cookieBuilder.append(String.format("; Domain=%s", PROD_DOMAIN));
+            cookieBuilder.append("; Secure; SameSite=None");
+        } else if (LOCAL_ORIGIN.equals(origin)) {
+            cookieBuilder.append("; SameSite=None");
+        }
+
+        response.addHeader("Set-Cookie", cookieBuilder.toString());
     }
 
-    public void clearRefreshTokenCookie(HttpServletResponse response) {
-        response.setHeader("Set-Cookie", String.format(
-                "%s=; Path=/; Domain=skore.skala25a.project.skala-ai.com; Secure; HttpOnly; Max-Age=0; SameSite=Lax",
-                REFRESH_TOKEN
-        ));
-    }
+    public void clearRefreshTokenCookie(HttpServletRequest request, HttpServletResponse response) {
+        String origin = request.getHeader("Origin");
+        StringBuilder cookieBuilder = new StringBuilder();
 
+        cookieBuilder.append(String.format("%s=; Path=/; Max-Age=0", REFRESH_TOKEN));
+
+        if (PROD_ORIGIN.equals(origin)) {
+            cookieBuilder.append(String.format("; Domain=%s", PROD_DOMAIN));
+            cookieBuilder.append("; Secure; SameSite=None");
+        } else if (LOCAL_ORIGIN.equals(origin)) {
+            cookieBuilder.append("; SameSite=None");
+        }
+
+        response.addHeader("Set-Cookie", cookieBuilder.toString());
+    }
 }
