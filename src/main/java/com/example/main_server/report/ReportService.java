@@ -1,11 +1,15 @@
 package com.example.main_server.report;
 
-import com.example.main_server.report.dto.ReportResponse;
+import com.example.main_server.report.dto.ReportSummaryResponse;
 import com.example.main_server.report.dto.ReportsResponse;
 import com.example.main_server.report.entity.BaseReport;
 import com.example.main_server.report.repository.BaseRepostRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.bson.Document;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -16,6 +20,7 @@ public class ReportService {
     private static final String TYPE_PERSONAL_QUARTER = "personal-quarter";
     private static final String TYPE_PERSONAL_ANNUAL = "personal-annual";
     private final BaseRepostRepository baseRepostRepository;
+    private final MongoTemplate mongoTemplate;
 
     private static void sortReports(List<BaseReport> personalReports) {
         personalReports.sort((r1, r2) -> {
@@ -44,9 +49,15 @@ public class ReportService {
         });
     }
 
-    public void getReport(String documentId) {
-        // TODO: 리포트 상세 조회
-        baseRepostRepository.findById(documentId);
+    public Object getReportById(String documentId) {
+        Query query = new Query(Criteria.where("_id").is(documentId));
+        Document rawDoc = mongoTemplate.findOne(query, Document.class, "reports");
+
+        if (rawDoc == null) {
+            throw new IllegalArgumentException("문서를 찾을 수 없습니다: " + documentId);
+        }
+
+        return rawDoc;
     }
 
     public ReportsResponse getReportsForLeader(Long userId, Long organizationId) {
@@ -59,11 +70,11 @@ public class ReportService {
         sortReports(personalReports);
         sortReports(teamReports);
 
-        List<ReportResponse> personalReportResponses = personalReports.stream()
+        List<ReportSummaryResponse> personalReportResponses = personalReports.stream()
                 .map(this::convertToReportResponse)
                 .toList();
 
-        List<ReportResponse> teamReportResponses = teamReports.stream()
+        List<ReportSummaryResponse> teamReportResponses = teamReports.stream()
                 .map(this::convertToReportResponse)
                 .toList();
 
@@ -77,24 +88,24 @@ public class ReportService {
         // 최신 기준으로 정렬
         sortReports(personalReports);
 
-        List<ReportResponse> personalReportResponses = personalReports.stream()
+        List<ReportSummaryResponse> personalReportResponses = personalReports.stream()
                 .map(this::convertToReportResponse)
                 .toList();
 
         return new ReportsResponse(personalReportResponses, List.of());
     }
 
-    private ReportResponse convertToReportResponse(BaseReport baseReport) {
-        ReportResponse.UserInfo userInfo = null;
-        if (baseReport.getUser() != null) {
-            userInfo = new ReportResponse.UserInfo(
-                    baseReport.getUser().getUserId(),
-                    baseReport.getUser().getName(),
-                    baseReport.getUser().getDepartment()
-            );
-        }
+    private ReportSummaryResponse convertToReportResponse(BaseReport baseReport) {
+//        ReportSummaryResponse.UserInfo userInfo = null;
+//        if (baseReport.getUser() != null) {
+//            userInfo = new ReportSummaryResponse.UserInfo(
+//                    baseReport.getUser().getUserId(),
+//                    baseReport.getUser().getName(),
+//                    baseReport.getUser().getDepartment()
+//            );
+//        }
 
-        return new ReportResponse(
+        return new ReportSummaryResponse(
                 baseReport.getId(),
                 baseReport.getType(),
                 baseReport.getEvaluatedYear(),
@@ -102,8 +113,7 @@ public class ReportService {
                 baseReport.getCreatedAt(),
                 baseReport.getTitle(),
                 baseReport.getStartDate(),
-                baseReport.getEndDate(),
-                userInfo
+                baseReport.getEndDate()
         );
     }
 
