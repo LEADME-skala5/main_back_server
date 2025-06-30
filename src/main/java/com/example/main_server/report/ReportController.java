@@ -1,6 +1,6 @@
 package com.example.main_server.report;
 
-import com.example.main_server.common.entity.User;
+import com.example.main_server.auth.user.entity.User;
 import com.example.main_server.report.dto.ReportsResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -31,7 +31,7 @@ public class ReportController {
 
         // ROLE_USER
         ReportsResponse personalReports = reportService.getReportsForUser(userId);
-        
+
         return ResponseEntity.ok(personalReports);
     }
 

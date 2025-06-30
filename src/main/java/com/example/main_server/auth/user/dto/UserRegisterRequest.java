@@ -1,4 +1,4 @@
-package com.example.main_server.user.dto;
+package com.example.main_server.auth.user.dto;
 
 import com.example.main_server.common.entity.CareerLevel;
 

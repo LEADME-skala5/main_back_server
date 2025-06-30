@@ -1,6 +1,6 @@
 package com.example.main_server.auth.jwt;
 
-import com.example.main_server.common.entity.User;
+import com.example.main_server.auth.user.entity.User;
 import com.example.main_server.common.repository.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

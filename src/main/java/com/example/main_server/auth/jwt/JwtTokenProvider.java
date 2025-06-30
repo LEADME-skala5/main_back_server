@@ -1,6 +1,6 @@
 package com.example.main_server.auth.jwt;
 
-import com.example.main_server.common.entity.User;
+import com.example.main_server.auth.user.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -211,7 +211,7 @@ public class JwtTokenProvider {
         if (PROD_ORIGIN.equals(origin)) {
             cookieBuilder.append(String.format("; Domain=%s", PROD_DOMAIN));
         }
-        
+
         cookieBuilder.append(String.format("; Max-Age=%d", (int) (maxAge / 1000)));
 
         return cookieBuilder.toString();

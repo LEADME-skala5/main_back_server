@@ -1,6 +1,6 @@
 package com.example.main_server.evaluation.peer;
 
-import com.example.main_server.common.entity.User;
+import com.example.main_server.auth.user.entity.User;
 import com.example.main_server.common.repository.UserRepository;
 import com.example.main_server.evaluation.common.dto.TaskInfoResponse;
 import com.example.main_server.evaluation.common.entity.Task;

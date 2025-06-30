@@ -1,5 +1,11 @@
-package com.example.main_server.common.entity;
+package com.example.main_server.auth.user.entity;
 
+import com.example.main_server.common.entity.BaseEntity;
+import com.example.main_server.common.entity.CareerLevel;
+import com.example.main_server.common.entity.Department;
+import com.example.main_server.common.entity.Division;
+import com.example.main_server.common.entity.Job;
+import com.example.main_server.common.entity.Organization;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

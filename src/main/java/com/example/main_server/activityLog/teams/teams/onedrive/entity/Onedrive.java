@@ -1,6 +1,6 @@
 package com.example.main_server.activityLog.teams.teams.onedrive.entity;
 
-import com.example.main_server.common.entity.User;
+import com.example.main_server.auth.user.entity.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;

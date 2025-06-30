@@ -1,16 +1,16 @@
-package com.example.main_server.user;
+package com.example.main_server.auth.user;
 
 
+import com.example.main_server.auth.user.dto.UserRegisterRequest;
+import com.example.main_server.auth.user.dto.UserResponse;
+import com.example.main_server.auth.user.entity.User;
 import com.example.main_server.common.entity.Department;
 import com.example.main_server.common.entity.Division;
 import com.example.main_server.common.entity.Organization;
-import com.example.main_server.common.entity.User;
 import com.example.main_server.common.repository.DepartmentRepository;
 import com.example.main_server.common.repository.DivisionRepository;
 import com.example.main_server.common.repository.OrganizationRepository;
 import com.example.main_server.common.repository.UserRepository;
-import com.example.main_server.user.dto.UserRegisterRequest;
-import com.example.main_server.user.dto.UserResponse;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

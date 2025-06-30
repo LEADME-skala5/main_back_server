@@ -1,12 +1,12 @@
-package com.example.main_server.user;
+package com.example.main_server.auth.user;
 
 import com.example.main_server.auth.jwt.JwtRedisService;
 import com.example.main_server.auth.jwt.JwtTokenProvider;
-import com.example.main_server.common.entity.User;
-import com.example.main_server.user.dto.LogInRequest;
-import com.example.main_server.user.dto.LogInResponse;
-import com.example.main_server.user.dto.UserRegisterRequest;
-import com.example.main_server.user.dto.UserResponse;
+import com.example.main_server.auth.user.dto.LogInRequest;
+import com.example.main_server.auth.user.dto.LogInResponse;
+import com.example.main_server.auth.user.dto.UserRegisterRequest;
+import com.example.main_server.auth.user.dto.UserResponse;
+import com.example.main_server.auth.user.entity.User;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.Map;

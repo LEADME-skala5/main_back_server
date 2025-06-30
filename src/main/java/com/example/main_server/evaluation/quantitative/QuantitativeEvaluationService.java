@@ -1,6 +1,6 @@
 package com.example.main_server.evaluation.quantitative;
 
-import com.example.main_server.common.entity.User;
+import com.example.main_server.auth.user.entity.User;
 import com.example.main_server.common.repository.UserRepository;
 import com.example.main_server.evaluation.common.entity.Task;
 import com.example.main_server.evaluation.common.entity.TaskParticipation;

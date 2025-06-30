@@ -4,7 +4,7 @@ import com.example.main_server.activityLog.teams.teams.chat.entity.TeamsAttachme
 import com.example.main_server.activityLog.teams.teams.chat.entity.TeamsMessage;
 import com.example.main_server.activityLog.teams.teams.chat.repository.TeamsMessageRepository;
 import com.example.main_server.auth.graphapi.GraphApiAccessTokenHandler;
-import com.example.main_server.common.entity.User;
+import com.example.main_server.auth.user.entity.User;
 import com.example.main_server.common.repository.UserRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.time.Instant;
