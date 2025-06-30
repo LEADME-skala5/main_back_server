@@ -2,6 +2,7 @@ package com.example.main_server.report;
 
 import com.example.main_server.report.dto.ReportSummaryResponse;
 import com.example.main_server.report.dto.ReportsResponse;
+import java.util.Comparator;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.bson.Document;
@@ -34,24 +35,26 @@ public class ReportService {
     public ReportsResponse getReportsForLeader(Long userId, Long organizationId) {
         // 1. 개인 리포트
         Query personalQuery = new Query(Criteria.where("user.userId").is(userId)
-                .and("type").in(List.of(TYPE_PERSONAL_QUARTER, TYPE_PERSONAL_ANNUAL)))
-                .with(Sort.by(Sort.Order.desc("evaluatedYear"), Sort.Order.desc("evaluatedQuarter")));
+                .and("type").in(List.of(TYPE_PERSONAL_ANNUAL, TYPE_PERSONAL_QUARTER)))
+                .with(Sort.by(Sort.Order.desc("evaluated_year"), Sort.Order.desc("evaluated_quarter")));
 
-        List<Document> personalDocs = mongoTemplate.find(personalQuery, Document.class, "reports");
+        List<Document> docs = mongoTemplate.find(personalQuery, Document.class, "reports");
 
         // 2. 팀 리포트
         Query teamQuery = new Query(Criteria.where("organizationId").is(organizationId)
-                .and("type").in(List.of(TYPE_TEAM_QUARTER, TYPE_TEAM_ANNUAL)))
-                .with(Sort.by(Sort.Order.desc("evaluatedYear"), Sort.Order.desc("evaluatedQuarter")));
+                .and("type").in(List.of(TYPE_TEAM_ANNUAL, TYPE_TEAM_QUARTER)))
+                .with(Sort.by(Sort.Order.desc("evaluated_year"), Sort.Order.desc("evaluated_quarter")));
 
         List<Document> teamDocs = mongoTemplate.find(teamQuery, Document.class, "reports");
 
-        List<ReportSummaryResponse> personalReportResponses = personalDocs.stream()
+        List<ReportSummaryResponse> personalReportResponses = docs.stream()
                 .map(this::convertToReportResponse)
+                .sorted(Comparator.comparingInt(r -> getTypePriority(r.type())))
                 .toList();
 
         List<ReportSummaryResponse> teamReportResponses = teamDocs.stream()
                 .map(this::convertToReportResponse)
+                .sorted(Comparator.comparingInt(r -> getTypePriority(r.type())))
                 .toList();
 
         return new ReportsResponse(personalReportResponses, teamReportResponses);
@@ -59,22 +62,21 @@ public class ReportService {
 
     public ReportsResponse getReportsForUser(Long userId) {
         Query query = new Query(Criteria.where("user.userId").is(userId)
-                .and("type").in(List.of(TYPE_PERSONAL_QUARTER, TYPE_PERSONAL_ANNUAL)));
+                .and("type").in(List.of(TYPE_PERSONAL_ANNUAL, TYPE_PERSONAL_QUARTER)))
+                .with(Sort.by(Sort.Order.desc("evaluated_year"), Sort.Order.desc("evaluated_quarter")));
 
-        // 정렬: evaluatedYear 내림차순, evaluatedQuarter 내림차순
-        query.with(Sort.by(Sort.Order.desc("evaluatedYear"), Sort.Order.desc("evaluatedQuarter")));
+        List<Document> docs = mongoTemplate.find(query, Document.class, "reports");
 
-        List<Document> personalDocs = mongoTemplate.find(query, Document.class, "reports");
-
-        List<ReportSummaryResponse> personalReportResponses = personalDocs.stream()
-                .map(this::convertToReportResponse) // rawDoc → DTO
+        List<ReportSummaryResponse> personalReportResponses = docs.stream()
+                .map(this::convertToReportResponse)
+                .sorted(Comparator.comparingInt(r -> getTypePriority(r.type())))
                 .toList();
 
         return new ReportsResponse(personalReportResponses, List.of());
     }
 
     private ReportSummaryResponse convertToReportResponse(Document rawDoc) {
-        Document userDoc = rawDoc.get("user", Document.class); // 중첩 Document 추출
+        Document userDoc = rawDoc.get("user", Document.class);
         ReportSummaryResponse.UserInfo userInfo = null;
 
         if (userDoc != null) {
@@ -90,13 +92,21 @@ public class ReportService {
         return new ReportSummaryResponse(
                 rawDoc.getObjectId("_id").toHexString(),
                 rawDoc.getString("type"),
-                rawDoc.getInteger("evaluatedYear"),
-                rawDoc.getInteger("evaluatedQuarter"),
-                rawDoc.getString("createdAt"),
+                rawDoc.getInteger("evaluated_year"),
+                rawDoc.getInteger("evaluated_quarter"),
+                rawDoc.getString("created_at"),
                 rawDoc.getString("title"),
                 rawDoc.getString("startDate"),
                 rawDoc.getString("endDate"),
                 userInfo
         );
+    }
+
+    private int getTypePriority(String type) {
+        return switch (type) {
+            case TYPE_PERSONAL_ANNUAL, TYPE_TEAM_ANNUAL -> 0;
+            case TYPE_PERSONAL_QUARTER, TYPE_TEAM_QUARTER -> 1;
+            default -> 2;
+        };
     }
 }
