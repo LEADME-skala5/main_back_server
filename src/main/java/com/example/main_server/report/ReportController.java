@@ -31,6 +31,7 @@ public class ReportController {
 
         // ROLE_USER
         ReportsResponse personalReports = reportService.getReportsForUser(userId);
+        
         return ResponseEntity.ok(personalReports);
     }
 
