@@ -31,11 +31,13 @@ public class ReportController {
 
         // ROLE_USER
         ReportsResponse personalReports = reportService.getReportsForUser(userId);
+        
         return ResponseEntity.ok(personalReports);
     }
 
     @GetMapping("reports/{documentId}")
-    public void getReport(@PathVariable String documentId) {
-        reportService.getReport(documentId);
+    public ResponseEntity<Object> getReport(@PathVariable String documentId) {
+        Object reportDetail = reportService.getReportById(documentId);
+        return ResponseEntity.ok(reportDetail);
     }
 }

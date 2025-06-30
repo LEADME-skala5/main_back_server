@@ -1,6 +1,6 @@
 package com.example.main_server.report.dto;
 
-public record ReportResponse(
+public record ReportSummaryResponse(
         String id,
         String type,
         Integer evaluatedYear,
