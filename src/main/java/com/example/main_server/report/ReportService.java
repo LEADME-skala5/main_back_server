@@ -2,7 +2,9 @@ package com.example.main_server.report;
 
 import com.example.main_server.report.dto.ReportSummaryResponse;
 import com.example.main_server.report.dto.ReportsResponse;
+import java.text.SimpleDateFormat;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.bson.Document;
@@ -32,47 +34,27 @@ public class ReportService {
         return rawDoc;
     }
 
-    public ReportsResponse getReportsForLeader(Long userId, Long organizationId) {
-        // 1. 개인 리포트
-        Query personalQuery = new Query(Criteria.where("user.userId").is(userId)
-                .and("type").in(List.of(TYPE_PERSONAL_ANNUAL, TYPE_PERSONAL_QUARTER)))
-                .with(Sort.by(Sort.Order.desc("evaluated_year"), Sort.Order.desc("evaluated_quarter")));
+    public ReportsResponse getReportsUserId(Long userId) {
+        List<ReportSummaryResponse> personalReportResponses =
+                getReportsByType(userId, List.of(TYPE_PERSONAL_ANNUAL, TYPE_PERSONAL_QUARTER));
 
-        List<Document> docs = mongoTemplate.find(personalQuery, Document.class, "reports");
-
-        // 2. 팀 리포트
-        Query teamQuery = new Query(Criteria.where("organizationId").is(organizationId)
-                .and("type").in(List.of(TYPE_TEAM_ANNUAL, TYPE_TEAM_QUARTER)))
-                .with(Sort.by(Sort.Order.desc("evaluated_year"), Sort.Order.desc("evaluated_quarter")));
-
-        List<Document> teamDocs = mongoTemplate.find(teamQuery, Document.class, "reports");
-
-        List<ReportSummaryResponse> personalReportResponses = docs.stream()
-                .map(this::convertToReportResponse)
-                .sorted(Comparator.comparingInt(r -> getTypePriority(r.type())))
-                .toList();
-
-        List<ReportSummaryResponse> teamReportResponses = teamDocs.stream()
-                .map(this::convertToReportResponse)
-                .sorted(Comparator.comparingInt(r -> getTypePriority(r.type())))
-                .toList();
+        List<ReportSummaryResponse> teamReportResponses =
+                getReportsByType(userId, List.of(TYPE_TEAM_ANNUAL, TYPE_TEAM_QUARTER));
 
         return new ReportsResponse(personalReportResponses, teamReportResponses);
     }
 
-    public ReportsResponse getReportsForUser(Long userId) {
+    private List<ReportSummaryResponse> getReportsByType(Long userId, List<String> types) {
         Query query = new Query(Criteria.where("user.userId").is(userId)
-                .and("type").in(List.of(TYPE_PERSONAL_ANNUAL, TYPE_PERSONAL_QUARTER)))
+                .and("type").in(types))
                 .with(Sort.by(Sort.Order.desc("evaluated_year"), Sort.Order.desc("evaluated_quarter")));
 
-        List<Document> docs = mongoTemplate.find(query, Document.class, "reports");
+        List<Document> documents = mongoTemplate.find(query, Document.class, "reports");
 
-        List<ReportSummaryResponse> personalReportResponses = docs.stream()
+        return documents.stream()
                 .map(this::convertToReportResponse)
                 .sorted(Comparator.comparingInt(r -> getTypePriority(r.type())))
                 .toList();
-
-        return new ReportsResponse(personalReportResponses, List.of());
     }
 
     private ReportSummaryResponse convertToReportResponse(Document rawDoc) {
@@ -89,12 +71,23 @@ public class ReportService {
             );
         }
 
+        Object rawCreatedAt = rawDoc.get("created_at");
+        String createdAtStr = null;
+
+        if (rawCreatedAt instanceof Date) {
+            createdAtStr = new SimpleDateFormat("yyyy-MM-dd").format((Date) rawCreatedAt);
+        } else if (rawCreatedAt instanceof String) {
+            createdAtStr = ((String) rawCreatedAt).split("T")[0];
+        } else {
+            createdAtStr = "-";
+        }
+
         return new ReportSummaryResponse(
                 rawDoc.getObjectId("_id").toHexString(),
                 rawDoc.getString("type"),
                 rawDoc.getInteger("evaluated_year"),
                 rawDoc.getInteger("evaluated_quarter"),
-                rawDoc.getString("created_at"),
+                createdAtStr,
                 rawDoc.getString("title"),
                 rawDoc.getString("startDate"),
                 rawDoc.getString("endDate"),
