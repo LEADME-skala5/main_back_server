@@ -8,6 +8,9 @@ import com.example.main_server.evaluation.common.entity.UserQuarterScore;
 import com.example.main_server.evaluation.common.repository.TaskParticipationRepository;
 import com.example.main_server.evaluation.common.repository.TaskRepository;
 import com.example.main_server.evaluation.common.repository.UserQuarterScoreRepository;
+import com.example.main_server.evaluation.quantitative.dto.QuarterEvaluationSummary;
+import com.example.main_server.evaluation.quantitative.dto.QuarterEvaluationSummaryImpl.QuarterEvaluationCompletedSummary;
+import com.example.main_server.evaluation.quantitative.dto.QuarterEvaluationSummaryImpl.QuarterEvaluationInProgressSummary;
 import com.example.main_server.evaluation.quantitative.dto.QuarterOverviewResponse;
 import com.example.main_server.evaluation.quantitative.dto.TaskEvaluation;
 import com.example.main_server.evaluation.quantitative.dto.TaskResponse;
@@ -17,6 +20,7 @@ import com.example.main_server.evaluation.quantitative.entity.WeeklyEvaluation;
 import com.example.main_server.evaluation.quantitative.repository.WeeklyEvaluationRepository;
 import com.example.main_server.util.exception.UserNotFoundException;
 import jakarta.transaction.Transactional;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -89,7 +93,28 @@ public class QuantitativeEvaluationService {
         // 3. 사용자별 응답 생성
         List<UserOverviewResponse> userResponses = createUserResponses(evaluationData, isEvaluationComplete);
 
-        return new QuarterOverviewResponse(isEvaluationComplete, userResponses);
+        QuarterEvaluationSummary summary = isEvaluationComplete
+                ? createCompletedSummary(evaluationData)
+                : createInProgressSummary(evaluationData);
+
+        return new QuarterOverviewResponse(isEvaluationComplete, userResponses, summary);
+    }
+
+    private QuarterEvaluationInProgressSummary createInProgressSummary(EvaluationData evaluationData) {
+        int totalTargetUsers = evaluationData.users().size();
+        int evaluatedUserCount = evaluationData.scores().size();
+        double progress = totalTargetUsers == 0 ? 0 : (evaluatedUserCount * 100.0) / totalTargetUsers;
+        int ongoingProjects = countOngoingProjects(evaluationData.participations());
+
+        return new QuarterEvaluationInProgressSummary(totalTargetUsers, evaluatedUserCount, progress, ongoingProjects);
+    }
+
+    private QuarterEvaluationCompletedSummary createCompletedSummary(EvaluationData evaluationData) {
+        int totalUsers = evaluationData.users().size();
+        double averageScore = calculateAverageScore(evaluationData.scores());
+        int ongoingProjects = countOngoingProjects(evaluationData.participations());
+
+        return new QuarterEvaluationCompletedSummary(totalUsers, averageScore, ongoingProjects);
     }
 
     private EvaluationData fetchAllEvaluationData(Long orgId, int year, int quarter) {
@@ -193,6 +218,21 @@ public class QuantitativeEvaluationService {
                 isEvaluated,
                 grade
         );
+    }
+
+    private int countOngoingProjects(List<TaskParticipation> participations) {
+        return (int) participations.stream()
+                .map(p -> p.getTask().getId())
+                .distinct()
+                .count();
+    }
+
+    private double calculateAverageScore(List<UserQuarterScore> scores) {
+        return scores.stream()
+                .map(UserQuarterScore::getFinalScore)
+                .mapToDouble(BigDecimal::doubleValue) // BigDecimal → double
+                .average()
+                .orElse(0.0);
     }
 
     private record EvaluationData(List<User> users, List<TaskParticipation> participations,
