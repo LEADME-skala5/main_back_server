@@ -1,6 +1,7 @@
 package com.example.main_server.evaluation.peer;
 
 import com.example.main_server.auth.user.entity.User;
+import com.example.main_server.auth.user.exception.UserNotFoundException;
 import com.example.main_server.common.repository.UserRepository;
 import com.example.main_server.evaluation.common.dto.TaskInfoResponse;
 import com.example.main_server.evaluation.common.entity.Task;
@@ -20,7 +21,6 @@ import com.example.main_server.evaluation.peer.repository.EvaluationKeywordRepos
 import com.example.main_server.evaluation.peer.repository.PeerKeywordEvaluationRepository;
 import com.example.main_server.evaluation.peer.repository.PeerTaskContributionEvaluationRepository;
 import com.example.main_server.util.EvaluationPeriodService;
-import com.example.main_server.util.exception.UserNotFoundException;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.HashMap;

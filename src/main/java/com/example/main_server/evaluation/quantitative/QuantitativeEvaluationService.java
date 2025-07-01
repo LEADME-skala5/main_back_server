@@ -1,6 +1,7 @@
 package com.example.main_server.evaluation.quantitative;
 
 import com.example.main_server.auth.user.entity.User;
+import com.example.main_server.auth.user.exception.UserNotFoundException;
 import com.example.main_server.common.repository.UserRepository;
 import com.example.main_server.evaluation.common.entity.Task;
 import com.example.main_server.evaluation.common.entity.TaskParticipation;
@@ -19,7 +20,6 @@ import com.example.main_server.evaluation.quantitative.dto.WeeklyEvaluationReque
 import com.example.main_server.evaluation.quantitative.entity.WeeklyEvaluation;
 import com.example.main_server.evaluation.quantitative.repository.WeeklyEvaluationRepository;
 import com.example.main_server.util.EvaluationPeriodService;
-import com.example.main_server.util.exception.UserNotFoundException;
 import jakarta.transaction.Transactional;
 import java.math.BigDecimal;
 import java.util.ArrayList;

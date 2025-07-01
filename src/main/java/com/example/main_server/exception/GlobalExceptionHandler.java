@@ -1,5 +1,6 @@
-package com.example.main_server.util.exception;
+package com.example.main_server.exception;
 
+import com.example.main_server.auth.user.exception.UserNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

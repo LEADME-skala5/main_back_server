@@ -1,6 +1,6 @@
 package com.example.main_server.evaluation.peer.exception;
 
-import com.example.main_server.util.exception.ErrorResponse;
+import com.example.main_server.exception.ErrorResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
