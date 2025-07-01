@@ -1,4 +1,4 @@
-package com.example.main_server.util.exception;
+package com.example.main_server.exception;
 
 public record ErrorResponse(
         String errorCode,
