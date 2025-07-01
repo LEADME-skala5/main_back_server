@@ -21,7 +21,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleGeneral(Exception e) {
         log.error("예상치 못한 오류", e);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorResponse("INTERNAL_ERROR", "서버 내부 오류가 발생했습니다."));
+                .body(new ErrorResponse("INTERNAL_ERROR", e.getMessage()));
     }
 }
 
