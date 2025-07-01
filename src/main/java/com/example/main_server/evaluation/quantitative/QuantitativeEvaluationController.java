@@ -2,6 +2,7 @@ package com.example.main_server.evaluation.quantitative;
 
 import com.example.main_server.evaluation.quantitative.dto.QuarterOverviewResponse;
 import com.example.main_server.evaluation.quantitative.dto.WeeklyEvaluationRequest;
+import com.example.main_server.util.EvaluationPeriodService;
 import java.net.URI;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,8 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/quantitative-evaluation")
 @RequiredArgsConstructor
 public class QuantitativeEvaluationController {
-    private static final int YEAR = 2024;
-    private static final int QUARTER = 1;
+    private final EvaluationPeriodService evaluationPeriodService;
     private final QuantitativeEvaluationService quantitativeEvaluationService;
 
     @PostMapping("/weekly")
@@ -32,7 +32,8 @@ public class QuantitativeEvaluationController {
     @GetMapping("/{organizationId}")
     @PreAuthorize("hasRole('ROLE_ORGANIZATION_LEADER')")
     public ResponseEntity<QuarterOverviewResponse> getEvaluations(@PathVariable Long organizationId) {
-        QuarterOverviewResponse res = quantitativeEvaluationService.getEvaluations(organizationId, YEAR, QUARTER);
+        QuarterOverviewResponse res = quantitativeEvaluationService.getEvaluations(organizationId,
+                evaluationPeriodService.getCurrentYear(), evaluationPeriodService.getCurrentQuarter());
         return ResponseEntity.ok(res);
     }
 }

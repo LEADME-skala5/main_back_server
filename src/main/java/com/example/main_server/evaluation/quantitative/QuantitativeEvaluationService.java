@@ -18,6 +18,7 @@ import com.example.main_server.evaluation.quantitative.dto.UserOverviewResponse;
 import com.example.main_server.evaluation.quantitative.dto.WeeklyEvaluationRequest;
 import com.example.main_server.evaluation.quantitative.entity.WeeklyEvaluation;
 import com.example.main_server.evaluation.quantitative.repository.WeeklyEvaluationRepository;
+import com.example.main_server.util.EvaluationPeriodService;
 import com.example.main_server.util.exception.UserNotFoundException;
 import jakarta.transaction.Transactional;
 import java.math.BigDecimal;
@@ -33,9 +34,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class QuantitativeEvaluationService {
-    private static final int YEAR = 2024;
-    private static final int QUARTER = 1;
-
+    private final EvaluationPeriodService evaluationPeriodService;
     private final WeeklyEvaluationRepository weeklyEvaluationRepository;
     private final UserRepository userRepository;
     private final TaskRepository taskRepository;
@@ -70,8 +69,8 @@ public class QuantitativeEvaluationService {
                     .evaluateeUser(evaluatee)
                     .task(task)
                     .grade(eval.grade())
-                    .evaluationQuarter(QUARTER)
-                    .evaluationYear(YEAR)
+                    .evaluationQuarter(evaluationPeriodService.getCurrentQuarter())
+                    .evaluationYear(evaluationPeriodService.getCurrentYear())
                     .build();
 
             evaluations.add(entity);

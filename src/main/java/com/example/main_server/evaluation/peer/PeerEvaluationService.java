@@ -19,6 +19,7 @@ import com.example.main_server.evaluation.peer.exception.KeywordNotFoundExceptio
 import com.example.main_server.evaluation.peer.repository.EvaluationKeywordRepository;
 import com.example.main_server.evaluation.peer.repository.PeerKeywordEvaluationRepository;
 import com.example.main_server.evaluation.peer.repository.PeerTaskContributionEvaluationRepository;
+import com.example.main_server.util.EvaluationPeriodService;
 import com.example.main_server.util.exception.UserNotFoundException;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
@@ -36,8 +37,7 @@ import org.springframework.stereotype.Service;
 public class PeerEvaluationService {
     private static final int MAX_CONTRIBUTION_SCORE = 100;
     private static final int MIN_CONTRIBUTION_SCORE = 1;
-    private static final int YEAR = 2025;
-    private static final int QUARTER = 2;
+    private final EvaluationPeriodService evaluationPeriodService;
     private final EvaluationKeywordRepository evaluationKeywordRepository;
     private final TaskParticipationRepository taskParticipationRepository;
     private final PeerKeywordEvaluationRepository peerKeywordEvaluationRepository;
@@ -154,8 +154,8 @@ public class PeerEvaluationService {
                 evaluation.setEvaluator(evaluator);
                 evaluation.setEvaluatee(evaluatee);
                 evaluation.setKeyword(keyword);
-                evaluation.setEvaluationYear(YEAR);
-                evaluation.setEvaluationQuarter(QUARTER);
+                evaluation.setEvaluationYear(evaluationPeriodService.getCurrentYear());
+                evaluation.setEvaluationQuarter(evaluationPeriodService.getCurrentQuarter());
 
                 evaluations.add(evaluation);
             }
