@@ -7,11 +7,15 @@ import com.example.main_server.auth.user.dto.LogInResponse;
 import com.example.main_server.auth.user.dto.UserRegisterRequest;
 import com.example.main_server.auth.user.dto.UserResponse;
 import com.example.main_server.auth.user.entity.User;
+import com.example.main_server.auth.user.exception.InvalidRefreshTokenException;
+import com.example.main_server.auth.user.exception.LogoutFailedException;
+import com.example.main_server.auth.user.exception.RefreshTokenMismatchException;
+import com.example.main_server.auth.user.exception.RefreshTokenNotFoundException;
+import com.example.main_server.auth.user.exception.TokenRefreshFailedException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -27,120 +31,72 @@ public class UserController {
     private final JwtRedisService jwtRedisService;
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody UserRegisterRequest request) {
-        try {
-            UserResponse response = userService.register(request);
-            return ResponseEntity.ok(response);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(
-                    Map.of(
-                            "errorCode", "DUPLICATE_EMPLOYEE_NUMBER",
-                            "message", e.getMessage()
-                    )
-            );
-        }
+    public ResponseEntity<UserResponse> register(@RequestBody UserRegisterRequest request) {
+        UserResponse response = userService.register(request);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/auth/login")
-    public ResponseEntity<?> login(@RequestBody LogInRequest logInRequest, HttpServletRequest request,
-                                   HttpServletResponse response) {
-        try {
-            // 사용자 인증
-            User user = userService.login(logInRequest.employeeNumber(), logInRequest.password());
+    public ResponseEntity<LogInResponse> login(@RequestBody LogInRequest req,
+                                               HttpServletRequest httpReq,
+                                               HttpServletResponse httpRes) {
+        User user = userService.login(req.employeeNumber(), req.password());
 
-            // 액세스 토큰 생성
-            String accessToken = jwtTokenProvider.createAccessToken(user);
+        String access = jwtTokenProvider.createAccessToken(user);
+        String refresh = jwtTokenProvider.createRefreshToken(user);
 
-            // 리프레시 토큰 생성
-            String refreshToken = jwtTokenProvider.createRefreshToken(user);
+        jwtRedisService.saveRefreshToken(user.getId(), refresh, jwtTokenProvider.getRefreshExpiration());
+        jwtTokenProvider.setRefreshTokenCookie(httpReq, httpRes, refresh);
+        jwtTokenProvider.setAccessTokenCookie(httpReq, httpRes, access);
 
-            // 리프레시 토큰을 Redis에 저장
-            jwtRedisService.saveRefreshToken(user.getId(), refreshToken, jwtTokenProvider.getRefreshExpiration());
-
-            // 리프레시 토큰을 쿠키에 설정
-            jwtTokenProvider.setRefreshTokenCookie(request, response, refreshToken);
-
-            // 액세스 토큰을 쿠키에 설정
-            jwtTokenProvider.setAccessTokenCookie(request, response, accessToken);
-
-            return ResponseEntity.ok(new LogInResponse(user));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(401).body(
-                    Map.of("errorCode", "LOGIN_FAILED", "message", e.getMessage())
-            );
-        }
+        return ResponseEntity.ok(new LogInResponse(user));
     }
 
     @PostMapping("/auth/refresh")
-    public ResponseEntity<?> refreshToken(HttpServletRequest request, HttpServletResponse response) {
-        // 쿠키에서 리프레시 토큰 추출
-        String refreshToken = jwtTokenProvider.getRefreshTokenFromCookie(request);
+    public ResponseEntity<LogInResponse> refresh(HttpServletRequest req, HttpServletResponse res) {
 
-        if (refreshToken == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("errorCode", "REFRESH_TOKEN_NOT_FOUND", "message", "리프레시 토큰이 없습니다."));
+        String refresh = jwtTokenProvider.getRefreshTokenFromCookie(req);
+        if (refresh == null) {
+            throw new RefreshTokenNotFoundException("리프레시 토큰이 없습니다.");
+        }
+
+        if (!jwtTokenProvider.validateToken(refresh)) {
+            throw new InvalidRefreshTokenException("유효하지 않은 리프레시 토큰입니다.");
+        }
+
+        Long userId = jwtTokenProvider.getUserIdFromToken(refresh);
+        if (!jwtRedisService.validateRefreshToken(userId, refresh)) {
+            throw new RefreshTokenMismatchException("저장된 리프레시 토큰과 일치하지 않습니다.");
         }
 
         try {
-            // 리프레시 토큰 유효성 검증
-            if (!jwtTokenProvider.validateToken(refreshToken)) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(Map.of("errorCode", "INVALID_REFRESH_TOKEN", "message", "유효하지 않은 리프레시 토큰입니다."));
-            }
-
-            // 토큰에서 사용자 ID 추출
-            Long userId = jwtTokenProvider.getUserIdFromToken(refreshToken);
-
-            // Redis에 저장된 토큰과 비교
-            if (!jwtRedisService.validateRefreshToken(userId, refreshToken)) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(Map.of("errorCode", "REFRESH_TOKEN_MISMATCH", "message", "저장된 리프레시 토큰과 일치하지 않습니다."));
-            }
-
-            // 사용자 정보 조회
             User user = userService.getUserById(userId);
+            String newAccess = jwtTokenProvider.createAccessToken(user);
+            String newRefresh = jwtTokenProvider.createRefreshToken(user);
 
-            // 새 토큰 발급
-            String newAccessToken = jwtTokenProvider.createAccessToken(user);
-            String newRefreshToken = jwtTokenProvider.createRefreshToken(user);
-
-            // Redis 업데이트
-            jwtRedisService.saveRefreshToken(userId, newRefreshToken, jwtTokenProvider.getRefreshExpiration());
-
-            // 쿠키 업데이트 (request를 전달하여 오리진 인식)
-            jwtTokenProvider.setRefreshTokenCookie(request, response, newRefreshToken);
-
-            // 액세스 토큰을 쿠키에 설정 (request를 전달하여 오리진 인식)
-            jwtTokenProvider.setAccessTokenCookie(request, response, newAccessToken);
+            jwtRedisService.saveRefreshToken(userId, newRefresh, jwtTokenProvider.getRefreshExpiration());
+            jwtTokenProvider.setRefreshTokenCookie(req, res, newRefresh);
+            jwtTokenProvider.setAccessTokenCookie(req, res, newAccess);
 
             return ResponseEntity.ok(new LogInResponse(user));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("errorCode", "TOKEN_REFRESH_FAILED", "message", "토큰 갱신 중 오류가 발생했습니다."));
+            throw new TokenRefreshFailedException("토큰 갱신 중 오류가 발생했습니다.");
         }
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<Map<String, String>> logout(HttpServletRequest req, HttpServletResponse res) {
         try {
-            // 액세스 토큰에서 사용자 ID 추출
-            String accessToken = jwtTokenProvider.getAccessTokenFromRequest(request);
-            if (accessToken != null && jwtTokenProvider.validateToken(accessToken)) {
-                Long userId = jwtTokenProvider.getUserIdFromToken(accessToken);
-
-                // Redis에서 리프레시 토큰 삭제
+            String access = jwtTokenProvider.getAccessTokenFromRequest(req);
+            if (access != null && jwtTokenProvider.validateToken(access)) {
+                Long userId = jwtTokenProvider.getUserIdFromToken(access);
                 jwtRedisService.deleteRefreshToken(userId);
             }
-
-            // 쿠키에서 토큰 삭제 (request를 전달하여 오리진 인식)
-            jwtTokenProvider.clearRefreshTokenCookie(request, response);
-            jwtTokenProvider.clearAccessTokenCookie(request, response);
-
+            jwtTokenProvider.clearRefreshTokenCookie(req, res);
+            jwtTokenProvider.clearAccessTokenCookie(req, res);
             return ResponseEntity.ok(Map.of("message", "로그아웃 되었습니다."));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("errorCode", "LOGOUT_FAILED", "message", "로그아웃 중 오류가 발생했습니다."));
+            throw new LogoutFailedException("로그아웃 중 오류가 발생했습니다.");
         }
     }
 }
-
