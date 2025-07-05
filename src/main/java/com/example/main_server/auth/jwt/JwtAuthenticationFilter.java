@@ -38,12 +38,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         try {
-            // 요청에서 액세스 토큰 추출 (쿠키 우선, 없으면 헤더)
             String accessToken = jwtTokenProvider.getAccessTokenFromRequest(request);
 
             // 토큰 유효성 검사
             if (accessToken != null && jwtTokenProvider.validateToken(accessToken)) {
-                // 토큰에서 사용자 정보 추출
                 Long userId = jwtTokenProvider.getUserIdFromToken(accessToken);
                 User user = userRepository.findById(userId).orElse(null);
 

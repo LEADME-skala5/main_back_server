@@ -150,11 +150,6 @@ public class JwtTokenProvider {
         return getClaimFromToken(token, claims -> Long.parseLong(claims.get("id").toString()));
     }
 
-    // 토큰에서 사용자 사번 추출
-    public String getEmployeeNumberFromToken(String token) {
-        return getClaimFromToken(token, claims -> claims.get("employeeNumber").toString());
-    }
-
     // 토큰 만료일 추출
     public Date getExpirationDateFromToken(String token) {
         return getClaimFromToken(token, Claims::getExpiration);
