@@ -9,6 +9,7 @@ public record UserOverviewResponse(
         String name,
         String position,
         String email,
+        String recentReportId,
         List<TaskResponse> tasks,
         BigDecimal quarterScore, // null = 미평가
         Integer rank,            // null = 미평가
