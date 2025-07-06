@@ -24,12 +24,12 @@ import com.example.main_server.util.EvaluationPeriodService;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -45,59 +45,56 @@ public class PeerEvaluationService {
     private final PeerTaskContributionEvaluationRepository peerTaskContributionEvaluationRepository;
     private final TaskRepository taskRepository;
 
+    @Cacheable(value = "peers", key = "#userId")
     public List<PeerInfoResponse> getPeers(Long userId) {
-        // 1. userId로 해당 사용자가 참여한 모든 TaskParticipation 조회
-        List<TaskParticipation> userParticipation = taskParticipationRepository.findByUserId(userId);
+        // 1. 한 번의 쿼리로 모든 필요한 데이터를 조회 (fetch join 사용)
+        List<TaskParticipation> userParticipations = taskParticipationRepository
+                .findByUserIdWithTaskAndUser(userId);
 
-        // 2. 각 task에 대해 다른 참여자들 조회
-        Map<Long, List<TaskInfoResponse>> peerTaskMap = new HashMap<>();
+        if (userParticipations.isEmpty()) {
+            return new ArrayList<>();
+        }
 
-        for (TaskParticipation participation : userParticipation) {
-            Long taskId = participation.getTask().getId();
+        // 2. 사용자가 참여한 모든 task ID 수집
+        Set<Long> taskIds = userParticipations.stream()
+                .map(tp -> tp.getTask().getId())
+                .collect(Collectors.toSet());
 
-            // 3. 같은 task에 참여한 다른 사용자들 조회 (자기 자신 제외)
-            List<TaskParticipation> otherParticipants =
-                    taskParticipationRepository.findByTaskIdAndUserIdNot(taskId, userId);
+        // 3. 한 번의 쿼리로 모든 관련 TaskParticipation 조회 (fetch join 사용)
+        List<TaskParticipation> allParticipations = taskParticipationRepository
+                .findByTaskIdsWithTaskAndUser(taskIds);
 
-            // 4. 각 동료별로 공통 참여 Task 정보 수집
-            for (TaskParticipation otherParticipation : otherParticipants) {
-                Long peerId = otherParticipation.getUser().getId();
+        // 4. 자기 자신 제외한 동료들만 필터링
+        List<TaskParticipation> peerParticipations = allParticipations.stream()
+                .filter(tp -> !tp.getUser().getId().equals(userId))
+                .toList();
 
-                // 해당 동료와 공통으로 참여한 모든 Task 조회
-                List<Task> commonTasks = taskParticipationRepository.findCommonTasksByUserIds(userId, peerId);
+        // 5. 동료별로 공통 참여 Task 그룹화
+        Map<Long, List<TaskInfoResponse>> peerTaskMap = peerParticipations.stream()
+                .collect(Collectors.groupingBy(
+                        tp -> tp.getUser().getId(),
+                        Collectors.mapping(
+                                tp -> new TaskInfoResponse(tp.getTask().getId(), tp.getTask().getName()),
+                                Collectors.toList()
+                        )
+                ));
 
-                List<TaskInfoResponse> taskInfoList = commonTasks.stream()
-                        .map(task -> new TaskInfoResponse(task.getId(), task.getName()))
-                        .toList();
+        // 6. 중복 제거된 동료 목록 생성
+        Map<Long, PeerInfoResponse> peerMap = new HashMap<>();
 
-                peerTaskMap.put(peerId, taskInfoList);
+        for (TaskParticipation peerParticipation : peerParticipations) {
+            Long peerId = peerParticipation.getUser().getId();
+
+            if (!peerMap.containsKey(peerId)) {
+                peerMap.put(peerId, new PeerInfoResponse(
+                        peerId,
+                        peerParticipation.getUser().getName(),
+                        peerTaskMap.get(peerId)
+                ));
             }
         }
 
-        // 5. 중복 제거된 동료 목록 생성
-        Set<Long> processedPeerIds = new HashSet<>();
-        List<PeerInfoResponse> peers = new ArrayList<>();
-
-        for (TaskParticipation participation : userParticipation) {
-            Long taskId = participation.getTask().getId();
-            List<TaskParticipation> otherParticipants =
-                    taskParticipationRepository.findByTaskIdAndUserIdNot(taskId, userId);
-
-            for (TaskParticipation otherParticipation : otherParticipants) {
-                Long peerId = otherParticipation.getUser().getId();
-
-                if (!processedPeerIds.contains(peerId)) {
-                    peers.add(new PeerInfoResponse(
-                            peerId,
-                            otherParticipation.getUser().getName(),
-                            peerTaskMap.get(peerId)
-                    ));
-                    processedPeerIds.add(peerId);
-                }
-            }
-        }
-
-        return peers;
+        return new ArrayList<>(peerMap.values());
     }
 
 
