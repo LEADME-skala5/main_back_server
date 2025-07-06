@@ -29,6 +29,9 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -40,6 +43,7 @@ public class QuantitativeEvaluationService {
     private final TaskRepository taskRepository;
     private final TaskParticipationRepository taskParticipationRepository;
     private final UserQuarterScoreRepository userFinalScoreRepository;
+    private final MongoTemplate mongoTemplate;
 
     @Transactional
     public String saveEvaluation(WeeklyEvaluationRequest request) {
@@ -90,13 +94,14 @@ public class QuantitativeEvaluationService {
         boolean isEvaluationComplete = !evaluationData.hasUnevaluatedUsers();
 
         // 3. 사용자별 응답 생성
-        List<UserOverviewResponse> userResponses = createUserResponses(evaluationData, isEvaluationComplete);
+        List<UserOverviewResponse> userResponses = createUserResponses(evaluationData, isEvaluationComplete, year,
+                quarter);
 
         QuarterEvaluationSummary summary = isEvaluationComplete
                 ? createCompletedSummary(evaluationData)
                 : createInProgressSummary(evaluationData);
 
-        return new QuarterOverviewResponse(isEvaluationComplete, userResponses, summary);
+        return new QuarterOverviewResponse(isEvaluationComplete, year, quarter, userResponses, summary);
     }
 
     private QuarterEvaluationInProgressSummary createInProgressSummary(EvaluationData evaluationData) {
@@ -117,13 +122,13 @@ public class QuantitativeEvaluationService {
     }
 
     private EvaluationData fetchAllEvaluationData(Long orgId, int year, int quarter) {
-        // 한 번의 쿼리로 모든 사용자 조회 (fetch join으로 organization, job 포함)
+        // 한 번의 쿼리로 모든 사용자 조회
         List<User> users = userRepository.findByOrganizationIdWithDetails(orgId);
 
         // 사용자 ID 목록 추출
         List<Long> userIds = users.stream().map(User::getId).toList();
 
-        // 한 번의 쿼리로 모든 TaskParticipation 조회 (fetch join으로 task 포함)
+        // 한 번의 쿼리로 모든 TaskParticipation 조회
         List<TaskParticipation> participations = taskParticipationRepository
                 .findCurrentTaskParticipationsByUserIds(userIds);
 
@@ -138,7 +143,8 @@ public class QuantitativeEvaluationService {
         return new EvaluationData(users, participations, evaluations, scores);
     }
 
-    private List<UserOverviewResponse> createUserResponses(EvaluationData data, boolean isEvaluationComplete) {
+    private List<UserOverviewResponse> createUserResponses(EvaluationData data, boolean isEvaluationComplete, int year,
+                                                           int quarter) {
         // 데이터를 Map에 저장
         Map<Long, List<TaskParticipation>> participationsByUser = data.participations().stream()
                 .collect(Collectors.groupingBy(p -> p.getUser().getId()));
@@ -153,7 +159,7 @@ public class QuantitativeEvaluationService {
                 .collect(Collectors.toMap(s -> s.getUser().getId(), Function.identity()));
 
         List<UserOverviewResponse> responses = data.users().stream()
-                .map(user -> createUserResponse(user, participationsByUser, evaluationMap, scoreMap))
+                .map(user -> createUserResponse(user, participationsByUser, evaluationMap, scoreMap, year, quarter))
                 .toList();
 
         // 평가 완료 시 점수순으로 정렬
@@ -171,7 +177,9 @@ public class QuantitativeEvaluationService {
             User user,
             Map<Long, List<TaskParticipation>> participationsByUser,
             Map<String, WeeklyEvaluation> evaluationMap,
-            Map<Long, UserQuarterScore> scoreMap
+            Map<Long, UserQuarterScore> scoreMap,
+            int year,
+            int quarter
     ) {
         List<TaskParticipation> userParticipations = participationsByUser.getOrDefault(user.getId(), List.of());
 
@@ -184,11 +192,15 @@ public class QuantitativeEvaluationService {
 
         UserQuarterScore score = scoreMap.get(user.getId());
 
+        // 몽고 DB에서 year 와 quarter에 맞는 reportId 가져오기
+        String reportId = findQuarterReportId(user.getId(), year, quarter);
+
         return new UserOverviewResponse(
                 user.getId(),
                 user.getName(),
                 user.getJob().getName(),
                 user.getPrimaryEmail(),
+                reportId,
                 taskResponses,
                 score != null ? score.getFinalScore() : null,
                 score != null ? score.getUserRank() : null,
@@ -232,6 +244,17 @@ public class QuantitativeEvaluationService {
                 .mapToDouble(BigDecimal::doubleValue) // BigDecimal → double
                 .average()
                 .orElse(0.0);
+    }
+
+    private String findQuarterReportId(Long userId, int year, int quarter) {
+        Query query = new Query();
+        query.addCriteria(Criteria.where("type").is("personal-quarter"))
+                .addCriteria(Criteria.where("evaluated_year").is(year))
+                .addCriteria(Criteria.where("evaluated_quarter").is(quarter))
+                .addCriteria(Criteria.where("user.userId").is(userId));
+
+        org.bson.Document result = mongoTemplate.findOne(query, org.bson.Document.class, "reports");
+        return result != null ? result.getObjectId("_id").toHexString() : null;
     }
 
     private record EvaluationData(List<User> users, List<TaskParticipation> participations,
