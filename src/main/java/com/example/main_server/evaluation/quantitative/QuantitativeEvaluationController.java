@@ -36,4 +36,12 @@ public class QuantitativeEvaluationController {
                 evaluationPeriodService.getCurrentYear(), evaluationPeriodService.getCurrentQuarter());
         return ResponseEntity.ok(res);
     }
+
+    @PostMapping("/weekly/generate")
+    @PreAuthorize("hasRole('ROLE_ORGANIZATION_LEADER')")
+    public ResponseEntity<String> generateWeeklyEvaluation(@RequestBody WeeklyEvaluationRequest request) {
+        String message = quantitativeEvaluationService.generateEvaluation(request);
+        URI location = URI.create("/weekly/generate");
+        return ResponseEntity.created(location).body(message);
+    }
 }

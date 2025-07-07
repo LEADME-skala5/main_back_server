@@ -33,6 +33,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClient;
 
 @Service
 @RequiredArgsConstructor
@@ -43,6 +44,7 @@ public class QuantitativeEvaluationService {
     private final TaskRepository taskRepository;
     private final TaskParticipationRepository taskParticipationRepository;
     private final UserQuarterScoreRepository userFinalScoreRepository;
+    private final RestClient aiServerRestClient;
     private final MongoTemplate mongoTemplate;
 
     @Transactional
@@ -255,6 +257,41 @@ public class QuantitativeEvaluationService {
 
         org.bson.Document result = mongoTemplate.findOne(query, org.bson.Document.class, "reports");
         return result != null ? result.getObjectId("_id").toHexString() : null;
+    }
+
+    public String generateEvaluation(WeeklyEvaluationRequest request) {
+        User evaluatee = userRepository.findById(request.evaluateeUserId())
+                .orElseThrow(() -> new UserNotFoundException("피평가자의 ID가 유효하지 않음"));
+
+        int currentYear = evaluationPeriodService.getCurrentYear();
+        int currentQuarter = evaluationPeriodService.getCurrentQuarter();
+
+        boolean reportExists = checkReportExists(evaluatee.getId(), currentYear, currentQuarter);
+        if (reportExists) {
+            return "이미 해당 분기에 평가 보고서가 존재합니다.";
+        }
+
+        try {
+            String response = aiServerRestClient.post()
+                    .uri("/weekly-report/batch-evaluate")
+                    .body(request)
+                    .retrieve()
+                    .body(String.class);
+
+            return response;
+        } catch (Exception e) {
+            throw new RuntimeException("AI 서버 요청 실패: " + e.getMessage(), e);
+        }
+    }
+
+    private boolean checkReportExists(Long userId, int year, int quarter) {
+        Criteria criteria = Criteria.where("user.userId").is(userId)
+                .and("type").is("personal-quarter")
+                .and("evaluatedYear").is(year)
+                .and("evaluatedQuarter").is(quarter);
+
+        Query query = new Query(criteria);
+        return mongoTemplate.exists(query, "reports");
     }
 
     private record EvaluationData(List<User> users, List<TaskParticipation> participations,
