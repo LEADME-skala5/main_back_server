@@ -1,4 +1,4 @@
-package com.example.main_server.common.repository;
+package com.example.main_server.auth.user;
 
 import com.example.main_server.auth.user.entity.User;
 import java.util.List;
@@ -22,7 +22,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     List<User> findAllByOrganizationId(Long organizationId);
 
+    Optional<User> findById(Long id);
+
     @Query("SELECT u FROM User u JOIN FETCH u.organization JOIN FETCH u.job WHERE u.organization.id = :orgId")
     List<User> findByOrganizationIdWithDetails(@Param("orgId") Long orgId);
-
 }

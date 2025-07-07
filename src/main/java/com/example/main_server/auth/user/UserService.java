@@ -10,7 +10,6 @@ import com.example.main_server.common.entity.Organization;
 import com.example.main_server.common.repository.DepartmentRepository;
 import com.example.main_server.common.repository.DivisionRepository;
 import com.example.main_server.common.repository.OrganizationRepository;
-import com.example.main_server.common.repository.UserRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

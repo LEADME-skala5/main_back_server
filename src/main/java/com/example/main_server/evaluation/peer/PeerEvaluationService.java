@@ -1,8 +1,8 @@
 package com.example.main_server.evaluation.peer;
 
+import com.example.main_server.auth.user.UserRepository;
 import com.example.main_server.auth.user.entity.User;
 import com.example.main_server.auth.user.exception.UserNotFoundException;
-import com.example.main_server.common.repository.UserRepository;
 import com.example.main_server.evaluation.common.dto.TaskInfoResponse;
 import com.example.main_server.evaluation.common.entity.Task;
 import com.example.main_server.evaluation.common.entity.TaskParticipation;

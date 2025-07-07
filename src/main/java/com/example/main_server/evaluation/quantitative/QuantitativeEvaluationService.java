@@ -1,8 +1,8 @@
 package com.example.main_server.evaluation.quantitative;
 
+import com.example.main_server.auth.user.UserRepository;
 import com.example.main_server.auth.user.entity.User;
 import com.example.main_server.auth.user.exception.UserNotFoundException;
-import com.example.main_server.common.repository.UserRepository;
 import com.example.main_server.evaluation.common.entity.Task;
 import com.example.main_server.evaluation.common.entity.TaskParticipation;
 import com.example.main_server.evaluation.common.entity.UserQuarterScore;
@@ -24,11 +24,14 @@ import jakarta.transaction.Transactional;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.bson.Document;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -292,6 +295,63 @@ public class QuantitativeEvaluationService {
 
         Query query = new Query(criteria);
         return mongoTemplate.exists(query, "reports");
+    }
+
+    public Object getWeeklyAISummary(Long userId, int year, int quarter) {
+        String userKey = String.valueOf(userId);
+        String quarterKey = year + "Q" + quarter;
+
+        String basePath = String.format("users.%s.quarters.%s", userKey, quarterKey);
+        String teamGoalsPath = basePath + ".teamGoals";
+
+        Query query = new Query();
+
+        query.addCriteria(Criteria.where("data_type").is("personal-quarter"));
+
+        query.addCriteria(Criteria.where("users." + userKey).exists(true));
+
+        query.addCriteria(Criteria.where(basePath + ".evaluated_year").is(year));
+        query.addCriteria(Criteria.where(basePath + ".evaluated_quarter").is(quarter));
+
+        query.fields().include(teamGoalsPath);
+
+        Document result = mongoTemplate.findOne(query, Document.class, "weekly_evaluation_results");
+        if (result == null) {
+            return null;
+        }
+
+        Document users = (Document) result.get("users");
+        if (users == null || !users.containsKey(userKey)) {
+            return null;
+        }
+
+        Document userDoc = (Document) users.get(userKey);
+        Document quarters = (Document) userDoc.get("quarters");
+        if (quarters == null || !quarters.containsKey(quarterKey)) {
+            return null;
+        }
+
+        Document quarterData = (Document) quarters.get(quarterKey);
+        List<Map<String, Object>> teamGoals = (List<Map<String, Object>>) quarterData.get("teamGoals");
+
+        Optional<User> optionalUser = userRepository.findById(userId);
+        if (optionalUser.isEmpty()) {
+            return null;
+        }
+
+        User user = optionalUser.get();
+
+        // 결과 조합
+        Map<String, Object> response = new HashMap<>();
+        response.put("user", Map.of(
+                "userId", user.getId(),
+                "name", user.getName(),
+                "department", user.getDepartment().getName(),
+                "job", user.getJob().getName()
+        ));
+        response.put("teamGoals", teamGoals);
+
+        return response;
     }
 
     private record EvaluationData(List<User> users, List<TaskParticipation> participations,
