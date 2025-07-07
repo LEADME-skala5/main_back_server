@@ -6,6 +6,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+/**
+ * JWT 리프레시 토큰을 Redis에 관리하는 서비스 클래스입니다.
+ * <p>
+ * 사용자 인증에 필요한 리프레시 토큰을 Redis에 저장, 조회, 삭제, 검증하는 기능을 제공합니다. 토큰의 안전한 관리와 만료 처리를 담당합니다.
+ * <p>
+ * 주요 기능: - 리프레시 토큰 저장 - 리프레시 토큰 조회 - 리프레시 토큰 삭제 - 리프레시 토큰 유효성 검증
+ */
+
+
 @Slf4j
 @Service
 @RequiredArgsConstructor

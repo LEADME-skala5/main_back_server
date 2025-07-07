@@ -32,6 +32,15 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
+/**
+ * 동료 평가 기능을 제공하는 서비스 클래스입니다.
+ * <p>
+ * 사용자의 동료 목록 조회, 동료 평가 키워드 관리, 키워드 기반 평가 저장, 태스크 기여도 평가 등의 기능을 제공합니다. 동료 간 평가를 통해 다양한 관점에서의 피드백을 수집하고 관리합니다.
+ * <p>
+ * 주요 기능: - 평가 가능한 동료 목록 조회 (캐싱 적용) - 평가 키워드 목록 조회 - 키워드 기반 동료 평가 데이터 저장 - 태스크별 기여도 평가 저장 및 검증
+ */
+
+
 @Service
 @RequiredArgsConstructor
 public class PeerEvaluationService {

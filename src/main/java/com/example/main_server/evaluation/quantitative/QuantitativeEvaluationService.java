@@ -38,6 +38,15 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
+/**
+ * 정성적 평가 기능을 제공하는 서비스 클래스입니다.
+ * <p>
+ * 조직별 정성적 평가 키워드를 관리하고, AI를 활용한 키워드 생성 기능을 제공합니다. 조직의 특성에 맞는 정성적 평가 기준을 설정하고 관리합니다.
+ * <p>
+ * 주요 기능: - 조직별 평가 키워드 저장 - AI 기반 평가 키워드 생성 - 외부 AI 모델 서버와의 연동
+ */
+
+
 @Service
 @RequiredArgsConstructor
 public class QuantitativeEvaluationService {
@@ -341,7 +350,6 @@ public class QuantitativeEvaluationService {
 
         User user = optionalUser.get();
 
-        // 결과 조합
         Map<String, Object> response = new HashMap<>();
         response.put("user", Map.of(
                 "userId", user.getId(),

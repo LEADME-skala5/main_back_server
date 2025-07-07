@@ -14,6 +14,15 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
+/**
+ * 보고서 관련 기능을 제공하는 서비스 클래스입니다.
+ * <p>
+ * MongoDB에 저장된 보고서 데이터를 조회하고 관리하는 기능을 제공합니다. 개인 분기/연간 보고서와 팀 분기/연간 보고서를 처리합니다.
+ * <p>
+ * 주요 기능: - ID로 특정 보고서 조회 - 사용자 ID를 기준으로 관련된 모든 보고서 조회 - 보고서 유형별 분류 및 정렬 - 보고서 데이터 변환 및 가공
+ */
+
+
 @Service
 @RequiredArgsConstructor
 public class ReportService {

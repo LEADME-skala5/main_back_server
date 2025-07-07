@@ -17,6 +17,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
+/**
+ * Teams 채팅 관련 기능을 제공하는 서비스 클래스입니다.
+ * <p>
+ * Microsoft Graph API를 활용하여 Teams 채팅방 ID 조회, 채팅 메시지 데이터 가져오기 등의 기능을 제공합니다. 사용자의 Teams 채팅 데이터를 수집하고 저장하는 역할을 담당합니다.
+ * <p>
+ * 주요 기능: - 사용자의 채팅방 ID 목록 조회 - 특정 채팅방의 메시지 데이터 수집 및 저장 - 채팅 메시지의 첨부 파일 정보 처리
+ */
+
 @Slf4j
 @Service
 @RequiredArgsConstructor

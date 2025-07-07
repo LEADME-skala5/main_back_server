@@ -14,6 +14,15 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+/**
+ * 사용자 관련 기능을 제공하는 서비스 클래스입니다.
+ * <p>
+ * 사용자 등록, 로그인, 조회 등의 기능을 제공하며, 사용자 정보를 관리합니다. 조직, 부서, 본부 정보와 사용자 정보를 연결하여 관리합니다.
+ * <p>
+ * 주요 기능: - 신규 사용자 등록 및 유효성 검증 - 사용자 로그인 처리 - 조직별 소속 구성원 조회 - ID로 특정 사용자 정보 조회
+ */
+
+
 @Service
 @RequiredArgsConstructor
 public class UserService {
