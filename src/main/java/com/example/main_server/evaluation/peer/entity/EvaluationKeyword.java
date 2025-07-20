@@ -1,6 +1,6 @@
 package com.example.main_server.evaluation.peer.entity;
 
-import com.example.main_server.common.entity.BaseEntity;
+import com.example.main_server.base.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

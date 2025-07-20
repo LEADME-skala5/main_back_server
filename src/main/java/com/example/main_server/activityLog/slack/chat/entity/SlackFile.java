@@ -2,7 +2,7 @@ package com.example.main_server.activityLog.slack.chat.entity;
 
 import com.example.main_server.activityLog.slack.team.entity.SlackTeam;
 import com.example.main_server.auth.user.entity.User;
-import com.example.main_server.common.entity.BaseEntity;
+import com.example.main_server.base.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;

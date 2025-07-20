@@ -1,6 +1,6 @@
 package com.example.main_server.auth.user.entity;
 
-import com.example.main_server.common.entity.BaseEntity;
+import com.example.main_server.base.BaseEntity;
 import com.example.main_server.common.entity.CareerLevel;
 import com.example.main_server.common.entity.Department;
 import com.example.main_server.common.entity.Division;

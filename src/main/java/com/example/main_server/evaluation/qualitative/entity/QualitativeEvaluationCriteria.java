@@ -1,6 +1,6 @@
 package com.example.main_server.evaluation.qualitative.entity;
 
-import com.example.main_server.common.entity.BaseEntity;
+import com.example.main_server.base.BaseEntity;
 import com.example.main_server.common.entity.Organization;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
