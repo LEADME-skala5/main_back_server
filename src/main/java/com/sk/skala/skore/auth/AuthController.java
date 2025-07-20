@@ -1,17 +1,13 @@
-package com.sk.skala.skore.auth.user;
+package com.sk.skala.skore.auth;
 
-import com.sk.skala.skore.auth.jwt.JwtRedisService;
-import com.sk.skala.skore.auth.jwt.JwtTokenProvider;
-import com.sk.skala.skore.auth.user.dto.LogInRequest;
-import com.sk.skala.skore.auth.user.dto.LogInResponse;
-import com.sk.skala.skore.auth.user.dto.UserRegisterRequest;
-import com.sk.skala.skore.auth.user.dto.UserResponse;
-import com.sk.skala.skore.auth.user.entity.User;
-import com.sk.skala.skore.auth.user.exception.InvalidRefreshTokenException;
-import com.sk.skala.skore.auth.user.exception.LogoutFailedException;
-import com.sk.skala.skore.auth.user.exception.RefreshTokenMismatchException;
-import com.sk.skala.skore.auth.user.exception.RefreshTokenNotFoundException;
-import com.sk.skala.skore.auth.user.exception.TokenRefreshFailedException;
+import com.sk.skala.skore.auth.exception.AuthException;
+import com.sk.skala.skore.auth.exception.AuthExceptionType;
+import com.sk.skala.skore.user.UserService;
+import com.sk.skala.skore.user.dto.LogInRequest;
+import com.sk.skala.skore.user.dto.LogInResponse;
+import com.sk.skala.skore.user.dto.UserRegisterRequest;
+import com.sk.skala.skore.user.dto.UserResponse;
+import com.sk.skala.skore.user.entity.User;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.Map;
@@ -23,9 +19,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
-public class UserController {
+public class AuthController {
     private final UserService userService;
     private final JwtTokenProvider jwtTokenProvider;
     private final JwtRedisService jwtRedisService;
@@ -36,7 +32,7 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/auth/login")
+    @PostMapping("/login")
     public ResponseEntity<LogInResponse> login(@RequestBody LogInRequest req,
                                                HttpServletRequest httpReq,
                                                HttpServletResponse httpRes) {
@@ -52,21 +48,21 @@ public class UserController {
         return ResponseEntity.ok(new LogInResponse(user));
     }
 
-    @PostMapping("/auth/refresh")
+    @PostMapping("/refresh")
     public ResponseEntity<LogInResponse> refresh(HttpServletRequest req, HttpServletResponse res) {
 
         String refresh = jwtTokenProvider.getRefreshTokenFromCookie(req);
         if (refresh == null) {
-            throw new RefreshTokenNotFoundException("리프레시 토큰이 없습니다.");
+            throw new AuthException(AuthExceptionType.REFRESH_TOKEN_NOT_FOUND);
         }
 
         if (!jwtTokenProvider.validateToken(refresh)) {
-            throw new InvalidRefreshTokenException("유효하지 않은 리프레시 토큰입니다.");
+            throw new AuthException(AuthExceptionType.INVALID_REFRESH_TOKEN);
         }
 
         Long userId = jwtTokenProvider.getUserIdFromToken(refresh);
         if (!jwtRedisService.validateRefreshToken(userId, refresh)) {
-            throw new RefreshTokenMismatchException("저장된 리프레시 토큰과 일치하지 않습니다.");
+            throw new AuthException(AuthExceptionType.INVALID_REFRESH_TOKEN);
         }
 
         try {
@@ -80,7 +76,7 @@ public class UserController {
 
             return ResponseEntity.ok(new LogInResponse(user));
         } catch (Exception e) {
-            throw new TokenRefreshFailedException("토큰 갱신 중 오류가 발생했습니다.");
+            throw new AuthException(AuthExceptionType.TOKEN_REFRESH_FAILED);
         }
     }
 
@@ -96,7 +92,7 @@ public class UserController {
             jwtTokenProvider.clearAccessTokenCookie(req, res);
             return ResponseEntity.ok(Map.of("message", "로그아웃 되었습니다."));
         } catch (Exception e) {
-            throw new LogoutFailedException("로그아웃 중 오류가 발생했습니다.");
+            throw new AuthException(AuthExceptionType.LOGOUT_FAILED);
         }
     }
 }

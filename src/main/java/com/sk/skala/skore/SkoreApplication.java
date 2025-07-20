@@ -9,10 +9,10 @@ import org.springframework.context.annotation.PropertySource;
         ignoreResourceNotFound = true
 )
 @SpringBootApplication
-public class MainServerApplication {
+public class SkoreApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(MainServerApplication.class, args);
+        SpringApplication.run(SkoreApplication.class, args);
     }
 
 }

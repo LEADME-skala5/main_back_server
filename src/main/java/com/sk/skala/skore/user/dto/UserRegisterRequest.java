@@ -1,4 +1,4 @@
-package com.sk.skala.skore.auth.user.dto;
+package com.sk.skala.skore.user.dto;
 
 import com.sk.skala.skore.common.entity.CareerLevel;
 

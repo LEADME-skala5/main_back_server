@@ -1,7 +1,7 @@
 package com.sk.skala.skore.activityLog.teams.email.entity;
 
-import com.sk.skala.skore.auth.user.entity.User;
 import com.sk.skala.skore.common.entity.ExternalUser;
+import com.sk.skala.skore.user.entity.User;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

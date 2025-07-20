@@ -1,8 +1,5 @@
 package com.sk.skala.skore.evaluation.peer;
 
-import com.sk.skala.skore.auth.user.UserRepository;
-import com.sk.skala.skore.auth.user.entity.User;
-import com.sk.skala.skore.auth.user.exception.UserNotFoundException;
 import com.sk.skala.skore.evaluation.common.dto.TaskInfoResponse;
 import com.sk.skala.skore.evaluation.common.entity.Task;
 import com.sk.skala.skore.evaluation.common.entity.TaskParticipation;
@@ -20,6 +17,10 @@ import com.sk.skala.skore.evaluation.peer.exception.KeywordNotFoundException;
 import com.sk.skala.skore.evaluation.peer.repository.EvaluationKeywordRepository;
 import com.sk.skala.skore.evaluation.peer.repository.PeerKeywordEvaluationRepository;
 import com.sk.skala.skore.evaluation.peer.repository.PeerTaskContributionEvaluationRepository;
+import com.sk.skala.skore.user.UserRepository;
+import com.sk.skala.skore.user.entity.User;
+import com.sk.skala.skore.user.exception.UserException;
+import com.sk.skala.skore.user.exception.UserExceptionType;
 import com.sk.skala.skore.util.EvaluationPeriodService;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
@@ -116,7 +117,7 @@ public class PeerEvaluationService {
     public PeerKeywordEvaluationResponse savePeerKeywords(PeerKeywordEvaluationRequest request) {
 
         User evaluator = userRepository.findById(request.evaluatorUserId())
-                .orElseThrow(() -> new UserNotFoundException("평가자를 찾을 수 없습니다. ID: " + request.evaluatorUserId()));
+                .orElseThrow(() -> new UserException(UserExceptionType.USER_NOT_FOUND));
 
         // 1. 필요한 모든 ID를 미리 추출
         List<Long> allEvaluateeIds = request.evaluations().stream()
@@ -143,7 +144,7 @@ public class PeerEvaluationService {
 
             User evaluatee = evaluateeMap.get(eval.evaluateeUserId());
             if (evaluatee == null) {
-                throw new UserNotFoundException("피평가자를 찾을 수 없습니다. ID: " + eval.evaluateeUserId());
+                throw new UserException(UserExceptionType.USER_NOT_FOUND);
             }
 
             if (eval.keywordIds() == null || eval.keywordIds().isEmpty()) {
@@ -182,10 +183,10 @@ public class PeerEvaluationService {
                 .orElseThrow(() -> new RuntimeException("태스크를 찾을 수 없습니다. ID: " + request.taskId()));
 
         User evaluator = userRepository.findById(request.evaluatorUserId())
-                .orElseThrow(() -> new UserNotFoundException("평가자를 찾을 수 없습니다. ID: " + request.evaluatorUserId()));
+                .orElseThrow(() -> new UserException(UserExceptionType.USER_NOT_FOUND));
 
         User target = userRepository.findById(request.targetUserId())
-                .orElseThrow(() -> new UserNotFoundException("피평가자를 찾을 수 없습니다. ID: " + request.targetUserId()));
+                .orElseThrow(() -> new UserException(UserExceptionType.USER_NOT_FOUND));
 
         // 기여도 평가 엔티티 생성
         PeerTaskContributionEvaluation evaluation = new PeerTaskContributionEvaluation();

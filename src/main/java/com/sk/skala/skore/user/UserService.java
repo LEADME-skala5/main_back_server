@@ -1,15 +1,15 @@
-package com.sk.skala.skore.auth.user;
+package com.sk.skala.skore.user;
 
 
-import com.sk.skala.skore.auth.user.dto.UserRegisterRequest;
-import com.sk.skala.skore.auth.user.dto.UserResponse;
-import com.sk.skala.skore.auth.user.entity.User;
 import com.sk.skala.skore.common.entity.Department;
 import com.sk.skala.skore.common.entity.Division;
 import com.sk.skala.skore.common.entity.Organization;
 import com.sk.skala.skore.common.repository.DepartmentRepository;
 import com.sk.skala.skore.common.repository.DivisionRepository;
 import com.sk.skala.skore.common.repository.OrganizationRepository;
+import com.sk.skala.skore.user.dto.UserRegisterRequest;
+import com.sk.skala.skore.user.dto.UserResponse;
+import com.sk.skala.skore.user.entity.User;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

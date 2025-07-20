@@ -1,6 +1,6 @@
-package com.sk.skala.skore.auth.user;
+package com.sk.skala.skore.user;
 
-import com.sk.skala.skore.auth.user.entity.User;
+import com.sk.skala.skore.user.entity.User;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;

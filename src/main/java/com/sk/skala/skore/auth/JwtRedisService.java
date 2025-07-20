@@ -1,4 +1,4 @@
-package com.sk.skala.skore.auth.jwt;
+package com.sk.skala.skore.auth;
 
 import java.time.Duration;
 import lombok.RequiredArgsConstructor;

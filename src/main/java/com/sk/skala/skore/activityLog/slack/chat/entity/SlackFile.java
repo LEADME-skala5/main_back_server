@@ -1,8 +1,8 @@
 package com.sk.skala.skore.activityLog.slack.chat.entity;
 
 import com.sk.skala.skore.activityLog.slack.team.entity.SlackTeam;
-import com.sk.skala.skore.auth.user.entity.User;
 import com.sk.skala.skore.base.BaseEntity;
+import com.sk.skala.skore.user.entity.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;

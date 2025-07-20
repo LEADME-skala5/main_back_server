@@ -1,7 +1,7 @@
-package com.sk.skala.skore.auth.user.dto;
+package com.sk.skala.skore.user.dto;
 
-import com.sk.skala.skore.auth.user.entity.User;
 import com.sk.skala.skore.common.entity.CareerLevel;
+import com.sk.skala.skore.user.entity.User;
 
 public record UserResponse(
         Long id,

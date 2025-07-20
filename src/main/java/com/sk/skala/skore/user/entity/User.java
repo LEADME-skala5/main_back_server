@@ -1,4 +1,4 @@
-package com.sk.skala.skore.auth.user.entity;
+package com.sk.skala.skore.user.entity;
 
 import com.sk.skala.skore.base.BaseEntity;
 import com.sk.skala.skore.common.entity.CareerLevel;

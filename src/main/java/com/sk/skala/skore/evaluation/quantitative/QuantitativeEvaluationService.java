@@ -1,8 +1,5 @@
 package com.sk.skala.skore.evaluation.quantitative;
 
-import com.sk.skala.skore.auth.user.UserRepository;
-import com.sk.skala.skore.auth.user.entity.User;
-import com.sk.skala.skore.auth.user.exception.UserNotFoundException;
 import com.sk.skala.skore.evaluation.common.entity.Task;
 import com.sk.skala.skore.evaluation.common.entity.TaskParticipation;
 import com.sk.skala.skore.evaluation.common.entity.UserQuarterScore;
@@ -19,6 +16,10 @@ import com.sk.skala.skore.evaluation.quantitative.dto.UserOverviewResponse;
 import com.sk.skala.skore.evaluation.quantitative.dto.WeeklyEvaluationRequest;
 import com.sk.skala.skore.evaluation.quantitative.entity.WeeklyEvaluation;
 import com.sk.skala.skore.evaluation.quantitative.repository.WeeklyEvaluationRepository;
+import com.sk.skala.skore.user.UserRepository;
+import com.sk.skala.skore.user.entity.User;
+import com.sk.skala.skore.user.exception.UserException;
+import com.sk.skala.skore.user.exception.UserExceptionType;
 import com.sk.skala.skore.util.EvaluationPeriodService;
 import jakarta.transaction.Transactional;
 import java.math.BigDecimal;
@@ -62,10 +63,10 @@ public class QuantitativeEvaluationService {
     @Transactional
     public String saveEvaluation(WeeklyEvaluationRequest request) {
         User evaluator = userRepository.findById(request.evaluatorUserId())
-                .orElseThrow(() -> new UserNotFoundException("평가자의 ID가 유효하지 않음"));
+                .orElseThrow(() -> new UserException(UserExceptionType.USER_NOT_FOUND));
 
         User evaluatee = userRepository.findById(request.evaluateeUserId())
-                .orElseThrow(() -> new UserNotFoundException("피평가자의 ID가 유효하지 않음"));
+                .orElseThrow(() -> new UserException(UserExceptionType.USER_NOT_FOUND));
 
         List<Long> taskIds = request.evaluations().stream()
                 .map(TaskEvaluation::taskId)
@@ -273,7 +274,7 @@ public class QuantitativeEvaluationService {
 
     public String generateEvaluation(WeeklyEvaluationRequest request) {
         User evaluatee = userRepository.findById(request.evaluateeUserId())
-                .orElseThrow(() -> new UserNotFoundException("피평가자의 ID가 유효하지 않음"));
+                .orElseThrow(() -> new UserException(UserExceptionType.USER_NOT_FOUND));
 
         int currentYear = evaluationPeriodService.getCurrentYear();
         int currentQuarter = evaluationPeriodService.getCurrentQuarter();

@@ -1,12 +1,12 @@
 package com.sk.skala.skore.activityLog.teams.chat;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.sk.skala.skore.activityLog.graphapi.GraphApiAccessTokenHandler;
 import com.sk.skala.skore.activityLog.teams.chat.entity.TeamsAttachment;
 import com.sk.skala.skore.activityLog.teams.chat.entity.TeamsMessage;
 import com.sk.skala.skore.activityLog.teams.chat.repository.TeamsMessageRepository;
-import com.sk.skala.skore.auth.user.UserRepository;
-import com.sk.skala.skore.auth.user.entity.User;
-import com.fasterxml.jackson.databind.JsonNode;
+import com.sk.skala.skore.user.UserRepository;
+import com.sk.skala.skore.user.entity.User;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;

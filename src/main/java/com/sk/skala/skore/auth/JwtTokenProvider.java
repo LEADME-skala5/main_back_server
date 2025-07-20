@@ -1,6 +1,6 @@
-package com.sk.skala.skore.auth.jwt;
+package com.sk.skala.skore.auth;
 
-import com.sk.skala.skore.auth.user.entity.User;
+import com.sk.skala.skore.user.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;

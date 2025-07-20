@@ -1,7 +1,7 @@
-package com.sk.skala.skore.auth.jwt;
+package com.sk.skala.skore.auth;
 
-import com.sk.skala.skore.auth.user.UserRepository;
-import com.sk.skala.skore.auth.user.entity.User;
+import com.sk.skala.skore.user.UserRepository;
+import com.sk.skala.skore.user.entity.User;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

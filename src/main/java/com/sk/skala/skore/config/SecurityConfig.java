@@ -1,6 +1,6 @@
 package com.sk.skala.skore.config;
 
-import com.sk.skala.skore.auth.jwt.JwtAuthenticationFilter;
+import com.sk.skala.skore.auth.JwtAuthenticationFilter;
 import java.util.Arrays;
 import java.util.List;
 import lombok.RequiredArgsConstructor;

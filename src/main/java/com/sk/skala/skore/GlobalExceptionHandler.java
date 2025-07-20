@@ -1,6 +1,5 @@
 package com.sk.skala.skore;
 
-import com.sk.skala.skore.auth.user.exception.UserNotFoundException;
 import com.sk.skala.skore.exception.ErrorResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -24,13 +23,6 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleAccessDenied(AccessDeniedException e) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(new ErrorResponse("FORBIDDEN", e.getMessage()));
-    }
-
-    @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleUserNotFound(UserNotFoundException e) {
-        log.warn("사용자 조회 실패: {}", e.getMessage());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(new ErrorResponse("USER_NOT_FOUND", e.getMessage()));
     }
 
     @ExceptionHandler(Exception.class)
