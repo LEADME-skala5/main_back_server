@@ -1,6 +1,6 @@
-package com.sk.skala.skore.common.repository;
+package com.sk.skala.skore.user.repository;
 
-import com.sk.skala.skore.common.entity.Organization;
+import com.sk.skala.skore.user.entity.Organization;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

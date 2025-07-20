@@ -1,15 +1,18 @@
 package com.sk.skala.skore.user;
 
 
-import com.sk.skala.skore.common.entity.Department;
-import com.sk.skala.skore.common.entity.Division;
-import com.sk.skala.skore.common.entity.Organization;
-import com.sk.skala.skore.common.repository.DepartmentRepository;
-import com.sk.skala.skore.common.repository.DivisionRepository;
-import com.sk.skala.skore.common.repository.OrganizationRepository;
 import com.sk.skala.skore.user.dto.UserRegisterRequest;
 import com.sk.skala.skore.user.dto.UserResponse;
+import com.sk.skala.skore.user.entity.Department;
+import com.sk.skala.skore.user.entity.Division;
+import com.sk.skala.skore.user.entity.Organization;
 import com.sk.skala.skore.user.entity.User;
+import com.sk.skala.skore.user.exception.UserException;
+import com.sk.skala.skore.user.exception.UserExceptionType;
+import com.sk.skala.skore.user.repository.DepartmentRepository;
+import com.sk.skala.skore.user.repository.DivisionRepository;
+import com.sk.skala.skore.user.repository.OrganizationRepository;
+import com.sk.skala.skore.user.repository.UserRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -31,28 +34,26 @@ public class UserService {
     private final DepartmentRepository departmentRepository;
     private final DivisionRepository divisionRepository;
 
-//    private final PasswordEncoder passwordEncoder;
-
     public UserResponse register(UserRegisterRequest request) {
         // 사번 중복 검사
         if (userRepository.findByEmployeeNumber(request.employeeNumber()).isPresent()) {
-            throw new IllegalArgumentException("이미 가입된 사번입니다.");
+            throw new UserException(UserExceptionType.DUPLICATE_EMPLOYEE_NUMBER);
         }
 
         // Teams 이메일 중복 검사
         if (userRepository.findByTeamsEmail(request.teamsEmail()).isPresent()) {
-            throw new IllegalArgumentException("이미 가입된 Teams 이메일입니다.");
+            throw new UserException(UserExceptionType.DUPLICATE_TEAMS_EMAIL);
         }
 
         // 조직 존재 여부 확인
         Organization organization = organizationRepository.findById(request.organizationId())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 조직입니다."));
+                .orElseThrow(() -> new UserException(UserExceptionType.ORGANIZATION_NOT_FOUND));
 
         Department department = departmentRepository.findById(request.departmentId())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 부서입니다."));
+                .orElseThrow(() -> new UserException(UserExceptionType.DEPARTMENT_NOT_FOUND));
 
         Division division = divisionRepository.findById(request.divisionId())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 본부입니다."));
+                .orElseThrow(() -> new UserException(UserExceptionType.DIVISION_NOT_FOUND));
 
         User user = createUser(request, organization, department, division);
 
@@ -62,22 +63,19 @@ public class UserService {
 
     private User createUser(UserRegisterRequest request, Organization organization, Department department,
                             Division division) {
-        User user = new User();
-        user.setName(request.name());
-        user.setEmployeeNumber(request.employeeNumber());
-        user.setPassword(request.password());
-        user.setTeamsEmail(request.teamsEmail());
-        user.setSlackEmail(request.slackEmail());
-        user.setLocalPath(request.localPath());
-        user.setDepartment(department);
-        user.setDivision(division);
-        user.setOrganization(organization);
-        user.setIsManager(request.isManager());
-        user.setCareerLevel(request.careerLevel());
-        // 비밀번호 암호화
-        // user.setPassword(passwordEncoder.encode(request.password()));
-
-        return user;
+        return User.createUser(
+                request.name(),
+                request.employeeNumber(),
+                request.password(),
+                request.teamsEmail(),
+                request.slackEmail(),
+                request.localPath(),
+                organization,
+                department,
+                division,
+                request.isManager(),
+                request.careerLevel()
+        );
     }
 
     public User login(String employeeNumber, String password) {
@@ -88,7 +86,7 @@ public class UserService {
                     }
                     return user;
                 })
-                .orElseThrow(() -> new IllegalArgumentException("등록된 사번이 없습니다."));
+                .orElseThrow(() -> new UserException(UserExceptionType.USER_NOT_FOUND));
     }
 
     public List<User> getOrganizationMember(Long organizationId) {
@@ -97,6 +95,6 @@ public class UserService {
 
     public User getUserById(Long id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다. ID: " + id));
+                .orElseThrow(() -> new UserException(UserExceptionType.USER_NOT_FOUND));
     }
 }

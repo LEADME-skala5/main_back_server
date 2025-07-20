@@ -1,10 +1,10 @@
 package com.sk.skala.skore.evaluation.qualitative;
 
-import com.sk.skala.skore.common.entity.Organization;
-import com.sk.skala.skore.common.repository.OrganizationRepository;
 import com.sk.skala.skore.evaluation.qualitative.dto.QualitativeEvaluationCriteriaRequest;
 import com.sk.skala.skore.evaluation.qualitative.dto.QualitativeEvaluationKeywordsResponse;
 import com.sk.skala.skore.evaluation.qualitative.entity.QualitativeEvaluationCriteria;
+import com.sk.skala.skore.user.entity.Organization;
+import com.sk.skala.skore.user.repository.OrganizationRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import java.util.List;

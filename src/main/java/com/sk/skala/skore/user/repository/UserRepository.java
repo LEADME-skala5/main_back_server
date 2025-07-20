@@ -1,4 +1,4 @@
-package com.sk.skala.skore.user;
+package com.sk.skala.skore.user.repository;
 
 import com.sk.skala.skore.user.entity.User;
 import java.util.List;

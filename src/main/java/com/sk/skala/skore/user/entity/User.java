@@ -1,11 +1,6 @@
 package com.sk.skala.skore.user.entity;
 
 import com.sk.skala.skore.base.BaseEntity;
-import com.sk.skala.skore.common.entity.CareerLevel;
-import com.sk.skala.skore.common.entity.Department;
-import com.sk.skala.skore.common.entity.Division;
-import com.sk.skala.skore.common.entity.Job;
-import com.sk.skala.skore.common.entity.Organization;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -18,13 +13,20 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import lombok.Data;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-@EqualsAndHashCode(callSuper = true)
-@Data
+@Getter
 @Entity
 @Table(name = "users")
+@EqualsAndHashCode(callSuper = true)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Builder
 public class User extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -63,12 +65,16 @@ public class User extends BaseEntity {
     @Column(name = "local_path", columnDefinition = "TEXT")
     private String localPath;
 
-    @Column(name = "is_manager", nullable = false, columnDefinition = "TINYINT(1)")
-    private Boolean isManager = false;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "user_role", nullable = false)
+    private UserRole userRole;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "career_level", nullable = false)
     private CareerLevel careerLevel;
+
+    @Column(name = "is_manager")
+    private Boolean isManager;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "job_id", nullable = false)
@@ -85,6 +91,42 @@ public class User extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "division_id", nullable = false)
     private Division division;
+
+    public static User createUser(String name, String employeeNumber, String password,
+                                  String teamsEmail, String slackEmail, String localPath,
+                                  Organization organization, Department department, Division division,
+                                  Boolean isManager, CareerLevel careerLevel) {
+        return User.builder()
+                .name(name)
+                .employeeNumber(employeeNumber)
+                .password(password)
+                .teamsEmail(teamsEmail)
+                .slackEmail(slackEmail)
+                .localPath(localPath)
+                .organization(organization)
+                .department(department)
+                .division(division)
+                .isManager(isManager)
+                .careerLevel(careerLevel)
+                .userRole(UserRole.USER)
+                .jobYears(0)
+                .build();
+    }
+
+    public void updatePassword(String newPassword) {
+        this.password = newPassword;
+    }
+
+    public void updateProfile(String name, String slackEmail, String teamsEmail, String localPath) {
+        this.name = name;
+        this.slackEmail = slackEmail;
+        this.teamsEmail = teamsEmail;
+        this.localPath = localPath;
+    }
+
+    public void assignToOrganization(Organization organization) {
+        this.organization = organization;
+    }
 
     public Division getDivision() {
         return organization != null ? organization.getDivision() : null;

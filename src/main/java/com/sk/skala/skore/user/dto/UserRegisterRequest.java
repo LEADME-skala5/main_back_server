@@ -1,6 +1,6 @@
 package com.sk.skala.skore.user.dto;
 
-import com.sk.skala.skore.common.entity.CareerLevel;
+import com.sk.skala.skore.user.entity.CareerLevel;
 
 public record UserRegisterRequest(
         String name,
